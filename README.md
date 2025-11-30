@@ -202,6 +202,10 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - [Documentazione QGIS](https://docs.qgis.org/)
 - [Specifiche GeoPackage](https://www.geopackage.org/)
 
+## Video Demo
+
+https://github.com/user-attachments/assets/geopackage_project_manager_breve.mp4
+
 ---
 
 **Nota**: Questo plugin è distribuito "così com'è", senza garanzie di alcun tipo. Usa a tuo rischio e pericolo.
