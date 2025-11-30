@@ -40,3 +40,8 @@ Thumbs.db
 
 # Scripts
 scripts/
+
+# Videos
+*.mp4
+*.avi
+*.mov
