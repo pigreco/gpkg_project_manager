@@ -204,11 +204,9 @@ https://github.com/pigreco/gpkg_project_manager/issues
 
 ## Video Demo
 
-[![Video Demo](https://img.shields.io/badge/▶️-Guarda_il_Video-blue?style=for-the-badge)](geopackage_project_manager_breve.mp4)
+[![Video Demo](https://img.youtube.com/vi/Fl8hurqrwsw/maxresdefault.jpg)](https://youtu.be/Fl8hurqrwsw)
 
-<video src="geopackage_project_manager_breve.mp4" controls></video>
-
-*Se il video non viene visualizzato, [clicca qui per scaricarlo](geopackage_project_manager_breve.mp4)*
+*Clicca sull'immagine per guardare il video su YouTube*
 
 ---
 
