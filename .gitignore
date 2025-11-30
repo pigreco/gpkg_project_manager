@@ -37,3 +37,6 @@ Thumbs.db
 # QGIS
 *.qgs~
 *.qgz~
+
+# Scripts
+scripts/
