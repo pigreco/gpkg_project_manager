@@ -1,0 +1,92 @@
+[general]
+name=GeoPackage Project Manager
+qgisMinimumVersion=3.0
+description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
+description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
+version=3.0.0
+author=Salvatore Fiandaca (Totò)
+email=pigrecoinfinito@gmail.com
+
+about=GeoPackage Project Manager è un plugin che permette di gestire in modo completo i progetti QGIS memorizzati all'interno di file GeoPackage.
+
+    Funzionalità principali:
+    • Salvataggio e caricamento di progetti QGIS in GeoPackage
+    • Gestione completa: rinomina, duplica, sovrascrivi, elimina progetti
+    • Esportazione progetti in formato QGS o QGZ
+    • Clonazione intelligente di GeoPackage con aggiornamento automatico dei percorsi
+    • Interfaccia moderna e intuitiva con supporto Qt5/Qt6
+    • Selettore di lingua integrato nell'interfaccia (Italiano/Inglese)
+    • Rilevamento automatico dei GeoPackage utilizzati nel progetto corrente
+
+    Il plugin è particolarmente utile per:
+    • Organizzare multipli progetti all'interno di un unico GeoPackage
+    • Creare backup e versioni dei progetti
+    • Condividere progetti completi con dati integrati
+    • Migrare progetti tra diversi ambienti mantenendo i riferimenti corretti
+
+about[en]=GeoPackage Project Manager is a plugin that allows complete management of QGIS projects stored within GeoPackage files.
+
+    Main features:
+    • Save and load QGIS projects in GeoPackage
+    • Complete management: rename, duplicate, overwrite, delete projects
+    • Export projects to QGS or QGZ format
+    • Smart GeoPackage cloning with automatic path updates
+    • Modern and intuitive interface with Qt5/Qt6 support
+    • Integrated language selector in the interface (Italian/English)
+    • Automatic detection of GeoPackages used in the current project
+
+    The plugin is particularly useful for:
+    • Organizing multiple projects within a single GeoPackage
+    • Creating backups and project versions
+    • Sharing complete projects with integrated data
+    • Migrating projects between different environments while maintaining correct references
+
+tracker=https://github.com/pigreco/gpkg_project_manager/issues
+repository=https://github.com/pigreco/gpkg_project_manager
+homepage=https://github.com/pigreco/gpkg_project_manager
+
+hasProcessingProvider=no
+
+# Tags separated by comma
+tags=geopackage,project,database,gpkg,manager,clone,backup
+
+category=Database
+icon=icon.png
+experimental=False
+deprecated=False
+
+# Server flag for server plugins
+server=False
+
+# Available languages (comma separated list)
+# Format: language_COUNTRY (e.g., en_US, it_IT, fr_FR)
+# Leave empty for no translations
+# The plugin will use the system language or fall back to English
+# Supported languages: English (en), Italian (it - default)
+available_languages=en,it
+
+changelog=3.0.0
+    • Interfaccia moderna completamente ridisegnata
+    • Supporto completo Qt5/Qt6
+    • Supporto multilingua completo (Italiano, Inglese)
+    • Selettore di lingua integrato nell'interfaccia del plugin
+    • Funzionalità di clonazione GeoPackage con aggiornamento percorsi
+    • Menu contestuale per azioni rapide
+    • Esportazione progetti in QGS/QGZ
+    • Miglioramenti alla stabilità e gestione errori
+    2.0.0
+    • Versione iniziale del plugin
+    • Gestione base progetti in GeoPackage
+
+changelog[en]=3.0.0
+    • Completely redesigned modern interface
+    • Full Qt5/Qt6 support
+    • Complete multilingual support (Italian, English)
+    • Integrated language selector in plugin interface
+    • GeoPackage cloning feature with automatic path updates
+    • Context menu for quick actions
+    • Project export to QGS/QGZ formats
+    • Improved stability and error handling
+    2.0.0
+    • Initial plugin version
+    • Basic GeoPackage project management
