@@ -67,6 +67,22 @@
         <translation>💾  Save in GeoPackage</translation>
     </message>
     <message>
+        <source>Aggiungi timestamp al nome (es: progetto_YYYYMMDDHHmmss)</source>
+        <translation>Add timestamp to name (e.g.: project_YYYYMMDDHHmmss)</translation>
+    </message>
+    <message>
+        <source>Aggiungi versione incrementale (es: progetto_v01, _v02, ...)</source>
+        <translation>Add incremental version (e.g.: project_v01, _v02, ...)</translation>
+    </message>
+    <message>
+        <source>Raggiunto il limite massimo di versioni (v99).</source>
+        <translation>Maximum version limit reached (v99).</translation>
+    </message>
+    <message>
+        <source>Versioning (v01, v02, ...)</source>
+        <translation>Versioning (v01, v02, ...)</translation>
+    </message>
+    <message>
         <source>  📋  Progetti nel GeoPackage</source>
         <translation>  📋  Projects in GeoPackage</translation>
     </message>

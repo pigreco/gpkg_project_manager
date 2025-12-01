@@ -11,7 +11,7 @@ from qgis.PyQt.QtWidgets import (
     QPushButton, QComboBox, QListWidget, QListWidgetItem,
     QFileDialog, QMessageBox, QGroupBox, QFrame,
     QAbstractItemView, QSizePolicy, QInputDialog,
-    QToolButton, QWidget, QProgressDialog, QApplication, QMenu
+    QToolButton, QWidget, QProgressDialog, QApplication, QMenu, QCheckBox
 )
 from qgis.PyQt.QtCore import Qt, QSize, QTimer, QSettings, QCoreApplication
 from qgis.PyQt.QtGui import QFont, QColor, QPalette, QIcon
@@ -20,6 +20,7 @@ import sqlite3
 import os
 import shutil
 import re
+from datetime import datetime
 
 # Import custom TS translator
 try:
@@ -487,7 +488,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         gpkg_layout.addLayout(gpkg_select_layout)
 
-        # Pulsante Clone GeoPackage
+        # Pulsante Clone GeoPackage e opzioni
         clone_layout = QHBoxLayout()
         clone_layout.addStretch()
         self.btn_clone_gpkg = QPushButton(self.tr("🔀 Clona GeoPackage"))
@@ -495,6 +496,13 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.btn_clone_gpkg.setToolTip(self.tr("Crea una copia del GeoPackage con percorsi aggiornati"))
         self.btn_clone_gpkg.clicked.connect(self.clona_geopackage)
         clone_layout.addWidget(self.btn_clone_gpkg)
+
+        # Checkbox per aggiungere versione al clone
+        self.chk_clone_add_version = QCheckBox(self.tr("Versioning (v01, v02, ...)"))
+        self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
+        self.chk_clone_add_version.stateChanged.connect(self.on_clone_version_changed)
+        clone_layout.addWidget(self.chk_clone_add_version)
+
         clone_layout.addStretch()
         gpkg_layout.addLayout(clone_layout)
 
@@ -519,6 +527,30 @@ class GeoPackageProjectManagerDialog(QDialog):
         name_layout.addWidget(self.btn_salva)
 
         save_layout.addLayout(name_layout)
+
+        # Checkbox per aggiungere timestamp (allineata con il campo nome)
+        timestamp_layout = QHBoxLayout()
+        timestamp_spacing = QLabel("")  # Label vuota per allineamento
+        timestamp_spacing.setFixedWidth(50)
+        timestamp_layout.addWidget(timestamp_spacing)
+        self.chk_add_timestamp = QCheckBox(self.tr("Aggiungi timestamp al nome (es: progetto_YYYYMMDDHHmmss)"))
+        self.chk_add_timestamp.setChecked(QSettings().value('gpkg_project_manager/add_timestamp', False, type=bool))
+        self.chk_add_timestamp.stateChanged.connect(self.on_timestamp_changed)
+        timestamp_layout.addWidget(self.chk_add_timestamp)
+        timestamp_layout.addStretch()
+        save_layout.addLayout(timestamp_layout)
+
+        # Checkbox per aggiungere versione (allineata con il campo nome)
+        version_layout = QHBoxLayout()
+        version_spacing = QLabel("")  # Label vuota per allineamento
+        version_spacing.setFixedWidth(50)
+        version_layout.addWidget(version_spacing)
+        self.chk_add_version = QCheckBox(self.tr("Aggiungi versione incrementale (es: progetto_v01, _v02, ...)"))
+        self.chk_add_version.setChecked(QSettings().value('gpkg_project_manager/add_version', False, type=bool))
+        self.chk_add_version.stateChanged.connect(self.on_version_changed)
+        version_layout.addWidget(self.chk_add_version)
+        version_layout.addStretch()
+        save_layout.addLayout(version_layout)
 
         layout.addWidget(save_group)
 
@@ -812,6 +844,21 @@ class GeoPackageProjectManagerDialog(QDialog):
                 # Reopen plugin
                 QTimer.singleShot(100, self.plugin.run)
 
+    def on_timestamp_changed(self, state):
+        """Handle timestamp checkbox state change."""
+        settings = QSettings()
+        settings.setValue('gpkg_project_manager/add_timestamp', self.chk_add_timestamp.isChecked())
+
+    def on_version_changed(self, state):
+        """Handle version checkbox state change."""
+        settings = QSettings()
+        settings.setValue('gpkg_project_manager/add_version', self.chk_add_version.isChecked())
+
+    def on_clone_version_changed(self, state):
+        """Handle clone version checkbox state change."""
+        settings = QSettings()
+        settings.setValue('gpkg_project_manager/clone_add_version', self.chk_clone_add_version.isChecked())
+
     def salva_progetto(self):
         """Salva il progetto corrente nel GeoPackage."""
         if not self.gpkg_path:
@@ -822,6 +869,43 @@ class GeoPackageProjectManagerDialog(QDialog):
         if not nome_progetto:
             self.mostra_errore(self.tr("Attenzione"), self.tr("Inserisci un nome per il progetto."))
             return
+
+        # Rimuovi timestamp e versione esistenti per ottenere il nome base
+        nome_base = nome_progetto
+        # Rimuovi timestamp se presente (pattern: _YYYYMMDDHHmmss)
+        nome_base = re.sub(r'_\d{14}$', '', nome_base)
+        # Rimuovi versione se presente (pattern: _vNN)
+        nome_base = re.sub(r'_v\d{2}$', '', nome_base)
+
+        # Aggiungi versione incrementale se l'opzione è attivata
+        if self.chk_add_version.isChecked():
+            # Cerca la versione più alta esistente
+            progetti_esistenti = self.get_lista_nomi_progetti()
+            max_version = 0
+            # Pattern per trovare progetti con lo stesso nome base e versione
+            # Supporta anche timestamp opzionale alla fine
+            pattern = re.compile(rf'^{re.escape(nome_base)}_v(\d{{2}})(?:_\d{{14}})?$')
+
+            for progetto in progetti_esistenti:
+                match = pattern.match(progetto)
+                if match:
+                    version_num = int(match.group(1))
+                    max_version = max(max_version, version_num)
+
+            # Incrementa la versione
+            next_version = max_version + 1
+            if next_version > 99:
+                self.mostra_errore(self.tr("Errore"), self.tr("Raggiunto il limite massimo di versioni (v99)."))
+                return
+
+            nome_progetto = f"{nome_base}_v{next_version:02d}"
+        else:
+            nome_progetto = nome_base
+
+        # Aggiungi timestamp se l'opzione è attivata
+        if self.chk_add_timestamp.isChecked():
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            nome_progetto = f"{nome_progetto}_{timestamp}"
 
         if nome_progetto in self.get_lista_nomi_progetti():
             if not self.mostra_conferma(
@@ -1169,7 +1253,35 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         # Chiedi il percorso di destinazione
         nome_originale = os.path.basename(self.gpkg_path)
-        nome_suggerito = nome_originale.replace('.gpkg', '_clone.gpkg')
+        nome_base = nome_originale.replace('.gpkg', '')
+
+        # Determina il nome suggerito in base alle opzioni
+        if self.chk_clone_add_version.isChecked():
+            # Rimuovi versione esistente se presente (pattern: _vNN)
+            nome_base_pulito = re.sub(r'_v\d{2}$', '', nome_base)
+
+            # Cerca la versione più alta esistente nella directory di destinazione
+            directory_destinazione = os.path.dirname(self.gpkg_path)
+            max_version = 0
+
+            # Cerca file esistenti con pattern versione
+            if os.path.exists(directory_destinazione):
+                pattern = re.compile(rf'^{re.escape(nome_base_pulito)}_v(\d{{2}})\.gpkg$')
+                for filename in os.listdir(directory_destinazione):
+                    match = pattern.match(filename)
+                    if match:
+                        version_num = int(match.group(1))
+                        max_version = max(max_version, version_num)
+
+            # Incrementa la versione
+            next_version = max_version + 1
+            if next_version > 99:
+                self.mostra_errore(self.tr("Errore"), self.tr("Raggiunto il limite massimo di versioni (v99)."))
+                return
+
+            nome_suggerito = f"{nome_base_pulito}_v{next_version:02d}.gpkg"
+        else:
+            nome_suggerito = nome_originale.replace('.gpkg', '_clone.gpkg')
 
         file_path, _ = QFileDialog.getSaveFileName(
             self, self.tr("Salva Clone GeoPackage"),
