@@ -13,8 +13,8 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView, QSizePolicy, QInputDialog,
     QToolButton, QWidget, QProgressDialog, QApplication, QMenu, QCheckBox
 )
-from qgis.PyQt.QtCore import Qt, QSize, QTimer, QSettings, QCoreApplication
-from qgis.PyQt.QtGui import QFont, QColor, QPalette, QIcon
+from qgis.PyQt.QtCore import Qt, QSize, QTimer, QSettings, QCoreApplication, QUrl
+from qgis.PyQt.QtGui import QFont, QColor, QPalette, QIcon, QDesktopServices
 
 import sqlite3
 import os
@@ -632,6 +632,15 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         footer_layout.addStretch()
 
+        # Help button
+        btn_help = QPushButton("📖 " + self.tr("Aiuto / Help"))
+        btn_help.setFixedWidth(140)
+        btn_help.setToolTip(self.tr("Apri la guida online / Open online guide"))
+        btn_help.clicked.connect(self.open_help)
+        footer_layout.addWidget(btn_help)
+
+        footer_layout.addSpacing(10)
+
         # Language selector
         lang_label = QLabel(self.tr("🌍"))
         lang_label.setObjectName("tipLabel")
@@ -843,6 +852,11 @@ class GeoPackageProjectManagerDialog(QDialog):
 
                 # Reopen plugin
                 QTimer.singleShot(100, self.plugin.run)
+
+    def open_help(self):
+        """Open online guide in default browser."""
+        url = QUrl("https://github.com/pigreco/gpkg_project_manager/blob/main/README.md")
+        QDesktopServices.openUrl(url)
 
     def on_timestamp_changed(self, state):
         """Handle timestamp checkbox state change."""
