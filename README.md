@@ -14,31 +14,32 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 
 ![GUI](gui.png)
 
-## Funzionalità Principali
+## Funzionalità Principali / Main Features
 
-### 🗂️ Gestione Progetti
-- **Salvataggio progetti**: Salva il progetto QGIS corrente direttamente nel GeoPackage
-- **Caricamento progetti**: Carica progetti salvati con un doppio clic
-- **Rinomina progetti**: Rinomina i progetti salvati
-- **Duplica progetti**: Crea copie dei progetti esistenti
-- **Elimina progetti**: Rimuovi progetti non più necessari
-- **Sovrascrivi progetti**: Aggiorna progetti esistenti con lo stato corrente
+### 🗂️ Gestione Progetti / Project Management
+- **Salvataggio progetti** / **Save projects**: Salva il progetto QGIS corrente direttamente nel GeoPackage / Save the current QGIS project directly into the GeoPackage
+- **Caricamento progetti** / **Load projects**: Carica progetti salvati con un doppio clic / Load saved projects with a double-click
+- **Rinomina progetti** / **Rename projects**: Rinomina i progetti salvati / Rename saved projects
+- **Duplica progetti** / **Duplicate projects**: Crea copie dei progetti esistenti / Create copies of existing projects
+- **Elimina progetti** / **Delete projects**: Rimuovi progetti non più necessari / Remove projects that are no longer needed
+- **Sovrascrivi progetti** / **Overwrite projects**: Aggiorna progetti esistenti con lo stato corrente / Update existing projects with the current state
 
-### 📤 Esportazione
-- **Esporta in QGS**: Esporta progetti in formato QGIS non compresso
-- **Esporta in QGZ**: Esporta progetti in formato QGIS compresso
+### 📤 Esportazione / Export
+- **Esporta in QGS** / **Export to QGS**: Esporta progetti in formato QGIS non compresso / Export projects in uncompressed QGIS format
+- **Esporta in QGZ** / **Export to QGZ**: Esporta progetti in formato QGIS compresso / Export projects in compressed QGIS format
 
-### 🔀 Clonazione Intelligente
-- **Clona GeoPackage**: Crea una copia completa del GeoPackage
-- **Aggiornamento automatico percorsi**: I percorsi dei layer vengono automaticamente aggiornati per puntare al nuovo GeoPackage clonato
-- Ideale per creare backup o condividere progetti completi
+### 🔀 Clonazione Intelligente / Smart Cloning
+- **Clona GeoPackage** / **Clone GeoPackage**: Crea una copia completa del GeoPackage / Create a complete copy of the GeoPackage
+- **Aggiornamento automatico percorsi** / **Automatic path update**: I percorsi dei layer vengono automaticamente aggiornati per puntare al nuovo GeoPackage clonato / Layer paths are automatically updated to point to the new cloned GeoPackage
+- Ideale per creare backup o condividere progetti completi / Ideal for creating backups or sharing complete projects
 
-### 🎨 Interfaccia Moderna
-- Design moderno e pulito
-- Supporto completo Qt5/Qt6
-- Menu contestuale con tasto destro
-- Rilevamento automatico dei GeoPackage nel progetto corrente
-- Feedback visivo e messaggi chiari
+### 🎨 Interfaccia Moderna / Modern Interface
+- Design moderno e pulito / Modern and clean design
+- Supporto completo Qt5/Qt6 / Full Qt5/Qt6 support
+- Menu contestuale con tasto destro / Right-click context menu
+- Rilevamento automatico dei GeoPackage nel progetto corrente / Automatic detection of GeoPackages in the current project
+- Feedback visivo e messaggi chiari / Visual feedback and clear messages
+- Selettore di lingua integrato / Integrated language selector
 
 ## Installazione
 

@@ -75,8 +75,8 @@
         <translation>📂 Load</translation>
     </message>
     <message>
-        <source>🔄 Sovrascrivi</source>
-        <translation>🔄 Overwrite</translation>
+        <source>⟳ Sovrascrivi</source>
+        <translation>⟳ Overwrite</translation>
     </message>
     <message>
         <source>🗑️ Elimina</source>
@@ -335,8 +335,8 @@
         <translation>📂  Load</translation>
     </message>
     <message>
-        <source>🔄  Sovrascrivi</source>
-        <translation>🔄  Overwrite</translation>
+        <source>⟳  Sovrascrivi</source>
+        <translation>⟳  Overwrite</translation>
     </message>
     <message>
         <source>✏️  Rinomina</source>

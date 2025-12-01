@@ -165,16 +165,9 @@ QComboBox:focus {
 }
 
 QComboBox::drop-down {
-    border: none;
-    width: 30px;
-}
-
-QComboBox::down-arrow {
-    image: none;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #6b7280;
-    margin-right: 10px;
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 20px;
 }
 
 QComboBox QAbstractItemView {
@@ -479,8 +472,15 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.btn_sfoglia.clicked.connect(self.sfoglia_geopackage)
         gpkg_select_layout.addWidget(self.btn_sfoglia)
 
-        self.btn_aggiorna = QPushButton(self.tr("🔄"))
+        self.btn_aggiorna = QPushButton(self.tr("⟳"))
         self.btn_aggiorna.setFixedWidth(45)
+        self.btn_aggiorna.setStyleSheet("""
+            QPushButton {
+                font-size: 20px;
+                font-weight: bold;
+                padding: 4px;
+            }
+        """)
         self.btn_aggiorna.setToolTip(self.tr("Aggiorna lista GeoPackage"))
         self.btn_aggiorna.clicked.connect(self.trova_geopackage_automatico)
         gpkg_select_layout.addWidget(self.btn_aggiorna)
@@ -545,7 +545,7 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.btn_carica.clicked.connect(self.carica_progetto)
         btn_row.addWidget(self.btn_carica)
 
-        self.btn_sovrascrivi = QPushButton(self.tr("🔄 Sovrascrivi"))
+        self.btn_sovrascrivi = QPushButton(self.tr("⟳ Sovrascrivi"))
         self.btn_sovrascrivi.clicked.connect(self.sovrascrivi_progetto)
         btn_row.addWidget(self.btn_sovrascrivi)
 
@@ -643,7 +643,7 @@ class GeoPackageProjectManagerDialog(QDialog):
         menu.setStyleSheet(MODERN_STYLE)
 
         menu.addAction(self.tr("📂  Carica"), self.carica_progetto)
-        menu.addAction(self.tr("🔄  Sovrascrivi"), self.sovrascrivi_progetto)
+        menu.addAction(self.tr("⟳  Sovrascrivi"), self.sovrascrivi_progetto)
         menu.addSeparator()
         menu.addAction(self.tr("✏️  Rinomina"), self.rinomina_progetto)
         menu.addAction(self.tr("📋  Duplica"), self.duplica_progetto)
