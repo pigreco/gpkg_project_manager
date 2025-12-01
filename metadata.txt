@@ -3,7 +3,7 @@ name=GeoPackage Project Manager
 qgisMinimumVersion=3.0
 description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
 description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
-version=3.1.0
+version=3.2.0
 author=Salvatore Fiandaca (Totò)
 email=pigrecoinfinito@gmail.com
 
@@ -65,7 +65,12 @@ server=False
 # Supported languages: English (en), Italian (it - default)
 available_languages=en,it
 
-changelog=3.1.0
+changelog=3.2.0
+    • Ottimizzazione database: compatta il GeoPackage con VACUUM SQLite per ridurre dimensioni e migliorare performance
+    • Info GeoPackage in tempo reale: visualizza dimensione file e numero progetti aggiornati automaticamente
+    • Statistiche ottimizzazione: mostra spazio risparmiato, percentuale di riduzione e tempo impiegato
+    • Gestione performance: rimuove spazio inutilizzato e ottimizza tabelle del database
+    3.1.0
     • Timestamp automatico: aggiungi timestamp ai nomi dei progetti (YYYYMMDDHHmmss)
     • Versioning incrementale progetti: sistema automatico di versioning (v01, v02, ..., v99)
     • Versioning GeoPackage clonati: versioning automatico per i file clonati
@@ -84,7 +89,12 @@ changelog=3.1.0
     • Versione iniziale del plugin
     • Gestione base progetti in GeoPackage
 
-changelog[en]=3.1.0
+changelog[en]=3.2.0
+    • Database optimization: compact GeoPackage with SQLite VACUUM to reduce size and improve performance
+    • Real-time GeoPackage info: display file size and number of projects updated automatically
+    • Optimization statistics: shows space saved, reduction percentage and time elapsed
+    • Performance management: removes unused space and optimizes database tables
+    3.1.0
     • Automatic timestamp: add timestamps to project names (YYYYMMDDHHmmss)
     • Incremental project versioning: automatic versioning system (v01, v02, ..., v99)
     • Cloned GeoPackage versioning: automatic versioning for cloned files

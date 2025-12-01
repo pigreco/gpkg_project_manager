@@ -382,5 +382,99 @@
         <source>progetto_qgis</source>
         <translation>qgis_project</translation>
     </message>
+    <message>
+        <source>ℹ️ Info: --</source>
+        <translation>ℹ️ Info: --</translation>
+    </message>
+    <message>
+        <source>ℹ️ Info: {0} • {1} {2}</source>
+        <translation>ℹ️ Info: {0} • {1} {2}</translation>
+    </message>
+    <message>
+        <source>progetti</source>
+        <translation>projects</translation>
+    </message>
+    <message>
+        <source>progetto</source>
+        <translation>project</translation>
+    </message>
+    <message>
+        <source>ℹ️ Info: Errore lettura</source>
+        <translation>ℹ️ Info: Read error</translation>
+    </message>
+    <message>
+        <source>⚙️ Ottimizza Database</source>
+        <translation>⚙️ Optimize Database</translation>
+    </message>
+    <message>
+        <source>Compatta il database per ridurre dimensioni e migliorare performance</source>
+        <translation>Compact the database to reduce size and improve performance</translation>
+    </message>
+    <message>
+        <source>Il file GeoPackage non esiste.</source>
+        <translation>The GeoPackage file does not exist.</translation>
+    </message>
+    <message>
+        <source>⚙️ Ottimizza GeoPackage</source>
+        <translation>⚙️ Optimize GeoPackage</translation>
+    </message>
+    <message>
+        <source>Dimensione attuale: {0}
+Progetti: {1}
+
+⚠️ L'ottimizzazione può richiedere tempo per file di grandi dimensioni.
+
+Vuoi continuare?</source>
+        <translation>Current size: {0}
+Projects: {1}
+
+⚠️ Optimization may take time for large files.
+
+Do you want to continue?</translation>
+    </message>
+    <message>
+        <source>⚙️ Ottimizzazione</source>
+        <translation>⚙️ Optimization</translation>
+    </message>
+    <message>
+        <source>Ottimizzazione del database in corso...
+
+Compattazione e pulizia dello spazio inutilizzato...</source>
+        <translation>Database optimization in progress...
+
+Compacting and cleaning unused space...</translation>
+    </message>
+    <message>
+        <source>✅ Ottimizzazione completata!</source>
+        <translation>✅ Optimization completed!</translation>
+    </message>
+    <message>
+        <source>Dimensione prima:    {0}
+Dimensione dopo:     {1}
+────────────────────────────
+Spazio risparmiato:  {2} ({3:.1f}%)
+
+Tempo impiegato: {4:.1f} secondi</source>
+        <translation>Size before:       {0}
+Size after:        {1}
+────────────────────────────
+Space saved:       {2} ({3:.1f}%)
+
+Time elapsed: {4:.1f} seconds</translation>
+    </message>
+    <message>
+        <source>Errore durante l'ottimizzazione:
+{}</source>
+        <translation>Error during optimization:
+{}</translation>
+    </message>
+    <message>
+        <source>Apri la guida online / Open online guide</source>
+        <translation>Open online guide / Apri la guida online</translation>
+    </message>
+    <message>
+        <source>Aiuto / Help</source>
+        <translation>Help / Aiuto</translation>
+    </message>
 </context>
 </TS>

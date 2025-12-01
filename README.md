@@ -40,6 +40,12 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Aggiornamento automatico percorsi** / **Automatic path update**: I percorsi dei layer vengono automaticamente aggiornati per puntare al nuovo GeoPackage clonato / Layer paths are automatically updated to point to the new cloned GeoPackage
 - Ideale per creare backup o condividere progetti completi / Ideal for creating backups or sharing complete projects
 
+### ⚙️ Ottimizzazione Database / Database Optimization
+- **Ottimizza GeoPackage** / **Optimize GeoPackage**: Compatta il database SQLite per ridurre dimensioni e migliorare performance / Compact the SQLite database to reduce size and improve performance
+- **Info in tempo reale** / **Real-time info**: Visualizza dimensione file e numero progetti aggiornati automaticamente / Display file size and number of projects updated automatically
+- **Statistiche dettagliate** / **Detailed statistics**: Mostra spazio risparmiato, percentuale di riduzione e tempo impiegato / Shows space saved, reduction percentage and time elapsed
+- **Operazione VACUUM** / **VACUUM operation**: Rimuove spazio inutilizzato e ottimizza le tabelle del database / Removes unused space and optimizes database tables
+
 ### 🎨 Interfaccia Moderna / Modern Interface
 - Design moderno e pulito / Modern and clean design
 - Supporto completo Qt5/Qt6 / Full Qt5/Qt6 support
@@ -194,6 +200,12 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - GitHub: [@pigreco](https://github.com/pigreco)
 
 ## Changelog
+
+### v3.2.0 (2025)
+- ⚙️ **Ottimizzazione database**: Compatta il GeoPackage con VACUUM SQLite per ridurre dimensioni e migliorare performance
+- 📊 **Info GeoPackage in tempo reale**: Visualizza dimensione file e numero progetti aggiornati automaticamente
+- 📈 **Statistiche ottimizzazione**: Mostra spazio risparmiato, percentuale di riduzione e tempo impiegato
+- 🔧 **Gestione performance**: Rimuove spazio inutilizzato e ottimizza tabelle del database
 
 ### v3.1.0 (2025)
 - 🔢 **Timestamp automatico**: Aggiungi timestamp ai nomi dei progetti (YYYYMMDDHHmmss)

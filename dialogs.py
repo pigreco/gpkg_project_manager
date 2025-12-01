@@ -503,6 +503,20 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         gpkg_layout.addLayout(gpkg_select_layout)
 
+        # Info box: dimensione e numero progetti
+        self.gpkg_info_label = QLabel(self.tr("ℹ️ Info: --"))
+        self.gpkg_info_label.setObjectName("tipLabel")
+        self.gpkg_info_label.setStyleSheet("""
+            QLabel {
+                color: #6b7280;
+                font-size: 11px;
+                padding: 5px 10px;
+                background-color: #f9fafb;
+                border-radius: 4px;
+            }
+        """)
+        gpkg_layout.addWidget(self.gpkg_info_label)
+
         # Pulsante Clone GeoPackage e opzioni
         clone_layout = QHBoxLayout()
         clone_layout.addStretch()
@@ -511,6 +525,14 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.btn_clone_gpkg.setToolTip(self.tr("Crea una copia del GeoPackage con percorsi aggiornati"))
         self.btn_clone_gpkg.clicked.connect(self.clona_geopackage)
         clone_layout.addWidget(self.btn_clone_gpkg)
+
+        clone_layout.addSpacing(10)
+
+        # Pulsante Ottimizza Database
+        self.btn_ottimizza = QPushButton(self.tr("⚙️ Ottimizza Database"))
+        self.btn_ottimizza.setToolTip(self.tr("Compatta il database per ridurre dimensioni e migliorare performance"))
+        self.btn_ottimizza.clicked.connect(self.ottimizza_database)
+        clone_layout.addWidget(self.btn_ottimizza)
 
         # Checkbox per aggiungere versione al clone
         self.chk_clone_add_version = QCheckBox(self.tr("Versioning (v01, v02, ...)"))
@@ -641,7 +663,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.1 • Qt5/Qt6 Compatible"))
+        version_label = QLabel(self.tr("v3.2 • Qt5/Qt6 Compatible"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
@@ -742,6 +764,7 @@ class GeoPackageProjectManagerDialog(QDialog):
         else:
             self.gpkg_path = None
             self.lista_progetti.clear()
+            self.aggiorna_info_gpkg()
 
     def sfoglia_geopackage(self):
         """Apre un dialog per selezionare un GeoPackage."""
@@ -787,6 +810,41 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         except Exception as e:
             self.mostra_errore(self.tr("Errore"), self.tr("Errore nella lettura dei progetti:\n{}").format(str(e)))
+
+        # Aggiorna info GeoPackage
+        self.aggiorna_info_gpkg()
+
+    def aggiorna_info_gpkg(self):
+        """Aggiorna le informazioni del GeoPackage (dimensione e numero progetti)."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.gpkg_info_label.setText(self.tr("ℹ️ Info: --"))
+            return
+
+        try:
+            # Calcola dimensione file
+            size_bytes = os.path.getsize(self.gpkg_path)
+            if size_bytes < 1024:
+                size_str = f"{size_bytes} B"
+            elif size_bytes < 1024 * 1024:
+                size_str = f"{size_bytes / 1024:.1f} KB"
+            elif size_bytes < 1024 * 1024 * 1024:
+                size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+            else:
+                size_str = f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+
+            # Conta progetti
+            num_progetti = self.lista_progetti.count()
+
+            # Aggiorna label
+            self.gpkg_info_label.setText(
+                self.tr("ℹ️ Info: {0} • {1} {2}").format(
+                    size_str,
+                    num_progetti,
+                    self.tr("progetti") if num_progetti != 1 else self.tr("progetto")
+                )
+            )
+        except Exception as e:
+            self.gpkg_info_label.setText(self.tr("ℹ️ Info: Errore lettura"))
 
     def pulisci_nome(self, nome):
         """Pulisce il nome del progetto."""
@@ -1447,3 +1505,128 @@ class GeoPackageProjectManagerDialog(QDialog):
         except Exception as e:
             import traceback
             self.mostra_errore(self.tr("Errore"), self.tr("Errore durante la clonazione:\n{}").format(str(e) + "\n\n" + traceback.format_exc()))
+
+    def ottimizza_database(self):
+        """Ottimizza il GeoPackage eseguendo VACUUM per ridurre dimensioni e migliorare performance."""
+        if not self.gpkg_path:
+            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
+            return
+
+        if not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Errore"), self.tr("Il file GeoPackage non esiste."))
+            return
+
+        try:
+            # Calcola dimensione prima dell'ottimizzazione
+            size_before = os.path.getsize(self.gpkg_path)
+            if size_before < 1024:
+                size_before_str = f"{size_before} B"
+            elif size_before < 1024 * 1024:
+                size_before_str = f"{size_before / 1024:.1f} KB"
+            elif size_before < 1024 * 1024 * 1024:
+                size_before_str = f"{size_before / (1024 * 1024):.1f} MB"
+            else:
+                size_before_str = f"{size_before / (1024 * 1024 * 1024):.2f} GB"
+
+            # Conta progetti
+            num_progetti = self.lista_progetti.count()
+
+            # Dialog di conferma
+            msg = QMessageBox(self)
+            msg.setIcon(MsgBoxQuestion)
+            msg.setWindowTitle(self.tr("⚙️ Ottimizza GeoPackage"))
+            msg.setText(
+                self.tr("Dimensione attuale: {0}\nProgetti: {1}\n\n"
+                        "⚠️ L'ottimizzazione può richiedere tempo per file di grandi dimensioni.\n\n"
+                        "Vuoi continuare?").format(size_before_str, num_progetti)
+            )
+            msg.setStandardButtons(MsgBoxYes | MsgBoxNo)
+            msg.setDefaultButton(MsgBoxNo)
+            msg.setStyleSheet(MODERN_STYLE)
+
+            if msg.exec() != MsgBoxYes:
+                return
+
+            # Progress dialog
+            progress = QProgressDialog(
+                self.tr("Ottimizzazione del database in corso...\n\nCompattazione e pulizia dello spazio inutilizzato..."),
+                None, 0, 0, self
+            )
+            progress.setWindowTitle(self.tr("⚙️ Ottimizzazione"))
+            progress.setStyleSheet(MODERN_STYLE)
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
+            QApplication.processEvents()
+
+            # Registra tempo di inizio
+            import time
+            start_time = time.time()
+
+            # Esegui VACUUM
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+            cursor.execute("VACUUM")
+            conn.commit()
+            conn.close()
+
+            # Calcola tempo impiegato
+            elapsed_time = time.time() - start_time
+
+            # Calcola dimensione dopo l'ottimizzazione
+            size_after = os.path.getsize(self.gpkg_path)
+            if size_after < 1024:
+                size_after_str = f"{size_after} B"
+            elif size_after < 1024 * 1024:
+                size_after_str = f"{size_after / 1024:.1f} KB"
+            elif size_after < 1024 * 1024 * 1024:
+                size_after_str = f"{size_after / (1024 * 1024):.1f} MB"
+            else:
+                size_after_str = f"{size_after / (1024 * 1024 * 1024):.2f} GB"
+
+            # Calcola spazio risparmiato
+            space_saved = size_before - size_after
+            if space_saved < 0:
+                space_saved = 0
+
+            if space_saved < 1024:
+                space_saved_str = f"{space_saved} B"
+            elif space_saved < 1024 * 1024:
+                space_saved_str = f"{space_saved / 1024:.1f} KB"
+            elif space_saved < 1024 * 1024 * 1024:
+                space_saved_str = f"{space_saved / (1024 * 1024):.1f} MB"
+            else:
+                space_saved_str = f"{space_saved / (1024 * 1024 * 1024):.2f} GB"
+
+            percentage_saved = (space_saved / size_before * 100) if size_before > 0 else 0
+
+            progress.close()
+
+            # Dialog risultato
+            result_msg = QMessageBox(self)
+            result_msg.setIcon(MsgBoxInformation)
+            result_msg.setWindowTitle(self.tr("✅ Ottimizzazione completata!"))
+            result_msg.setText(
+                self.tr("Dimensione prima:    {0}\n"
+                        "Dimensione dopo:     {1}\n"
+                        "────────────────────────────\n"
+                        "Spazio risparmiato:  {2} ({3:.1f}%)\n\n"
+                        "Tempo impiegato: {4:.1f} secondi").format(
+                    size_before_str,
+                    size_after_str,
+                    space_saved_str,
+                    percentage_saved,
+                    elapsed_time
+                )
+            )
+            result_msg.setStyleSheet(MODERN_STYLE)
+            result_msg.exec()
+
+            # Aggiorna le info del GeoPackage
+            self.aggiorna_info_gpkg()
+
+        except Exception as e:
+            import traceback
+            self.mostra_errore(
+                self.tr("Errore"),
+                self.tr("Errore durante l'ottimizzazione:\n{}").format(str(e) + "\n\n" + traceback.format_exc())
+            )
