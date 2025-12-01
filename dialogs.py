@@ -642,11 +642,6 @@ class GeoPackageProjectManagerDialog(QDialog):
         footer_layout.addSpacing(10)
 
         # Language selector
-        lang_label = QLabel(self.tr("🌍"))
-        lang_label.setObjectName("tipLabel")
-        lang_label.setToolTip(self.tr("Select language / Seleziona lingua"))
-        footer_layout.addWidget(lang_label)
-
         self.language_combo = QComboBox()
         self.language_combo.addItem("🇮🇹 Italiano", "it")
         self.language_combo.addItem("🇬🇧 English", "en")
