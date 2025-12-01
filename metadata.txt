@@ -3,7 +3,7 @@ name=GeoPackage Project Manager
 qgisMinimumVersion=3.0
 description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
 description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
-version=3.0.0
+version=3.1.0
 author=Salvatore Fiandaca (Totò)
 email=pigrecoinfinito@gmail.com
 
@@ -65,7 +65,13 @@ server=False
 # Supported languages: English (en), Italian (it - default)
 available_languages=en,it
 
-changelog=3.0.0
+changelog=3.1.0
+    • Timestamp automatico: aggiungi timestamp ai nomi dei progetti (YYYYMMDDHHmmss)
+    • Versioning incrementale progetti: sistema automatico di versioning (v01, v02, ..., v99)
+    • Versioning GeoPackage clonati: versioning automatico per i file clonati
+    • Impostazioni persistenti: le preferenze vengono salvate tra le sessioni
+    • Sostituzione intelligente: evita l'accumulo di timestamp e versioni duplicate
+    3.0.0
     • Interfaccia moderna completamente ridisegnata
     • Supporto completo Qt5/Qt6
     • Supporto multilingua completo (Italiano, Inglese)
@@ -78,7 +84,13 @@ changelog=3.0.0
     • Versione iniziale del plugin
     • Gestione base progetti in GeoPackage
 
-changelog[en]=3.0.0
+changelog[en]=3.1.0
+    • Automatic timestamp: add timestamps to project names (YYYYMMDDHHmmss)
+    • Incremental project versioning: automatic versioning system (v01, v02, ..., v99)
+    • Cloned GeoPackage versioning: automatic versioning for cloned files
+    • Persistent settings: preferences are saved between sessions
+    • Smart replacement: avoids accumulation of duplicate timestamps and versions
+    3.0.0
     • Completely redesigned modern interface
     • Full Qt5/Qt6 support
     • Complete multilingual support (Italian, English)

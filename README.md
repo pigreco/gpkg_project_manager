@@ -24,6 +24,13 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Elimina progetti** / **Delete projects**: Rimuovi progetti non più necessari / Remove projects that are no longer needed
 - **Sovrascrivi progetti** / **Overwrite projects**: Aggiorna progetti esistenti con lo stato corrente / Update existing projects with the current state
 
+### 🔢 Versioning e Timestamp / Versioning and Timestamp
+- **Timestamp automatico** / **Automatic timestamp**: Aggiungi automaticamente timestamp ai nomi dei progetti (formato: YYYYMMDDHHmmss) / Automatically add timestamps to project names (format: YYYYMMDDHHmmss)
+- **Versioning incrementale** / **Incremental versioning**: Sistema di versioning automatico per progetti (v01, v02, ..., v99) / Automatic versioning system for projects (v01, v02, ..., v99)
+- **Versioning GeoPackage clonati** / **Cloned GeoPackage versioning**: Versioning automatico per i GeoPackage clonati / Automatic versioning for cloned GeoPackages
+- **Sostituzione intelligente** / **Smart replacement**: Sostituisce automaticamente timestamp e versioni esistenti invece di accumularli / Automatically replaces existing timestamps and versions instead of accumulating them
+- **Impostazioni persistenti** / **Persistent settings**: Le preferenze di timestamp e versioning vengono salvate tra le sessioni / Timestamp and versioning preferences are saved between sessions
+
 ### 📤 Esportazione / Export
 - **Esporta in QGS** / **Export to QGS**: Esporta progetti in formato QGIS non compresso / Export projects in uncompressed QGIS format
 - **Esporta in QGZ** / **Export to QGZ**: Esporta progetti in formato QGIS compresso / Export projects in compressed QGIS format
@@ -188,7 +195,14 @@ https://github.com/pigreco/gpkg_project_manager/issues
 
 ## Changelog
 
-### v3.0.0 (2024)
+### v3.1.0 (2025)
+- 🔢 **Timestamp automatico**: Aggiungi timestamp ai nomi dei progetti (YYYYMMDDHHmmss)
+- 📊 **Versioning incrementale progetti**: Sistema automatico di versioning (v01, v02, ..., v99)
+- 🔄 **Versioning GeoPackage clonati**: Versioning automatico per i file clonati
+- 💾 **Impostazioni persistenti**: Le preferenze vengono salvate tra le sessioni
+- ✨ **Sostituzione intelligente**: Evita l'accumulo di timestamp e versioni duplicate
+
+### v3.0.0 (2025)
 - ✨ Interfaccia moderna completamente ridisegnata
 - 🔀 Funzionalità di clonazione GeoPackage con aggiornamento automatico percorsi
 - 🎯 Supporto completo Qt5/Qt6

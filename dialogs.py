@@ -626,7 +626,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.0 • Qt5/Qt6 Compatible"))
+        version_label = QLabel(self.tr("v3.1 • Qt5/Qt6 Compatible"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
