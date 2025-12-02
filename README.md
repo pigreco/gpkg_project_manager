@@ -272,4 +272,7 @@ https://github.com/pigreco/gpkg_project_manager/issues
 
 ---
 
-**Nota**: Questo plugin è distribuito "così com'è", senza garanzie di alcun tipo. Usa a tuo rischio e pericolo.
+NOTE:
+
+- Questo plugin è distribuito "così com'è", senza garanzie di alcun tipo. Usa a tuo rischio e pericolo.
+- L'intero plugin è stato sviluppato con _**Claude Code Opus 4.5**_.
