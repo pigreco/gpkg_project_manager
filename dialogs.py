@@ -845,6 +845,10 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         try:
             conn = sqlite3.connect(self.gpkg_path)
+            
+            # Assicurati che la tabella metadata esista
+            self.crea_tabella_metadata(conn)
+            
             cursor = conn.cursor()
 
             cursor.execute("""
@@ -900,9 +904,11 @@ class GeoPackageProjectManagerDialog(QDialog):
             self.gpkg_info_label.setText(self.tr("ℹ️ Info: Errore lettura"))
 
     def crea_tabella_metadata(self, conn):
-        """Crea la tabella dei metadati se non esiste."""
+        """Crea la tabella dei metadati se non esiste e la registra in gpkg_contents."""
         try:
             cursor = conn.cursor()
+            
+            # Crea la tabella dei metadati
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS qgis_projects_metadata (
                     project_name TEXT PRIMARY KEY,
@@ -914,6 +920,21 @@ class GeoPackageProjectManagerDialog(QDialog):
                     raster_count INTEGER
                 )
             """)
+            
+            # Registra la tabella in gpkg_contents se non esiste già
+            cursor.execute("""
+                INSERT OR IGNORE INTO gpkg_contents 
+                (table_name, data_type, identifier, description, last_change, srs_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                'qgis_projects_metadata',
+                'attributes',
+                'qgis_projects_metadata',
+                'QGIS Projects Metadata - Extended information about QGIS projects stored in GeoPackage',
+                datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+                0  # srs_id 0 per tabelle non spaziali
+            ))
+            
             conn.commit()
         except Exception as e:
             pass  # Tabella già esistente o errore non critico
