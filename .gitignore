@@ -26,6 +26,7 @@ wheels/
 .vscode/
 .idea/
 .claude/
+.github/
 *.swp
 *.swo
 *~

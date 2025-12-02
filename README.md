@@ -201,11 +201,18 @@ A: Sì, puoi salvare tutti i progetti che vuoi nello stesso GeoPackage. La tabel
 
 Contributi, segnalazioni di bug e richieste di funzionalità sono benvenuti!
 
+### Per Sviluppatori
+Prima di contribuire, consulta:
+- 📋 **[DEVELOPMENT_CHECKLIST.md](DEVELOPMENT_CHECKLIST.md)**: Checklist complete per sviluppo e release
+- ⚡ **[.github/QUICK_REFERENCE.md](.github/QUICK_REFERENCE.md)**: Promemoria rapido
+
+### Workflow Contributi
 1. Fork del repository
 2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit delle modifiche (`git commit -m 'Add some AmazingFeature'`)
-4. Push del branch (`git push origin feature/AmazingFeature`)
-5. Apri una Pull Request
+3. Segui la [Development Checklist](DEVELOPMENT_CHECKLIST.md)
+4. Commit delle modifiche (`git commit -m 'feat: add some AmazingFeature'`)
+5. Push del branch (`git push origin feature/AmazingFeature`)
+6. Apri una Pull Request
 
 ## Segnalazione Bug
 
