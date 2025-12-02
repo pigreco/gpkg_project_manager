@@ -470,6 +470,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         self.setup_ui()
         self.setStyleSheet(MODERN_STYLE)
+        self.clear_gui()
         self.trova_geopackage_automatico()
 
     def tr(self, message):
@@ -789,25 +790,58 @@ class GeoPackageProjectManagerDialog(QDialog):
 
     def trova_geopackage_automatico(self):
         """Trova tutti i GeoPackage usati nel progetto corrente."""
+        # Salva il GeoPackage corrente (normalizza il percorso)
+        current_gpkg = None
+        if self.gpkg_path and not self.gpkg_path.startswith("--"):
+            current_gpkg = os.path.normpath(os.path.abspath(self.gpkg_path))
+        
         self.gpkg_combo.clear()
         project = QgsProject.instance()
-        geopackages = set()
+        geopackages = {}  # Usa dict per mappare percorsi normalizzati -> percorsi originali
 
         for layer in project.mapLayers().values():
             source = layer.source()
             if '.gpkg' in source.lower():
                 gpkg_path = source.split('|')[0].strip() if '|' in source else source.strip()
                 if os.path.exists(gpkg_path):
-                    geopackages.add(gpkg_path)
+                    normalized = os.path.normpath(os.path.abspath(gpkg_path))
+                    geopackages[normalized] = gpkg_path
+        
+        # Aggiungi il GeoPackage corrente se esiste e non è già nella lista
+        if current_gpkg and os.path.exists(current_gpkg):
+            if current_gpkg not in geopackages:
+                geopackages[current_gpkg] = self.gpkg_path
 
         if geopackages:
-            for gpkg in sorted(geopackages):
-                self.gpkg_combo.addItem(gpkg)
-            self.gpkg_path = self.gpkg_combo.currentText()
+            # Ordina per percorso normalizzato e aggiungi usando i percorsi originali
+            for normalized in sorted(geopackages.keys()):
+                self.gpkg_combo.addItem(geopackages[normalized])
+            
+            # Ripristina la selezione corrente se presente
+            if current_gpkg and current_gpkg in geopackages:
+                original_path = geopackages[current_gpkg]
+                index = self.gpkg_combo.findText(original_path)
+                if index >= 0:
+                    self.gpkg_combo.setCurrentIndex(index)
+                    self.gpkg_path = original_path
+                else:
+                    self.gpkg_path = self.gpkg_combo.currentText()
+            else:
+                self.gpkg_path = self.gpkg_combo.currentText()
+                
             self.aggiorna_lista_progetti()
         else:
             self.gpkg_combo.addItem(self.tr("-- Nessun GeoPackage trovato nel progetto --"))
             self.gpkg_path = None
+
+    def clear_gui(self):
+        """Pulisce la GUI all'avvio del plugin."""
+        # Imposta valore di default per il nome progetto
+        self.txt_nome_progetto.setText("progetto")
+        # Pulisci lista progetti
+        self.lista_progetti.clear()
+        # Reset info GeoPackage
+        self.gpkg_info_label.setText(self.tr("ℹ️ Info: --"))
 
     def on_gpkg_changed(self, text):
         """Gestisce il cambio di GeoPackage selezionato."""
