@@ -231,7 +231,7 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - 📊 **Sistema metadati completo**: Estrazione e salvataggio automatico di metadati dettagliati per ogni progetto
 - 💡 **Tooltip intelligenti**: Visualizzazione informazioni complete al passaggio del mouse (data creazione/modifica, dimensione, layer count)
 - 🔄 **Aggiornamento batch metadati**: Nuovo pulsante per rigenerare tutti i metadati con un clic
-- 🛠️ **Fix compatibilità Qt5/Qt6**: Risolti problemi con i tooltip su diverse versioni di Qt
+- 🛠️ **Fix compatibilità Qt5/Qt6**: Risolti problemi con tooltip e checkbox su diverse versioni di Qt
 - 🎯 **Fallback intelligente**: I tooltip mostrano sempre almeno la dimensione del progetto, anche senza metadati completi
 - 🌍 **Traduzioni aggiornate**: Tutte le nuove funzionalità tradotte in italiano e inglese
 - 🗃️ **Tabella metadata**: Nuova tabella `qgis_projects_metadata` per informazioni dettagliate sui progetti

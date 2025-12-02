@@ -95,6 +95,9 @@ InstantPopup = get_qt_enum(QToolButton, 'InstantPopup') or 2
 # QEvent
 EventToolTip = get_qt_enum(QEvent, 'ToolTip') or 17
 
+# Qt Window Modality
+WindowModal = get_qt_enum(Qt, 'WindowModal') or 1
+
 
 # ============================================================
 # STILI CSS MODERNI
@@ -406,6 +409,41 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 QFrame#separator {
     background-color: #d1d5db;
     max-height: 1px;
+}
+
+QCheckBox {
+    color: #1e1e2e;
+    font-size: 12px;
+    spacing: 8px;
+    padding: 5px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #ffffff;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #3b82f6;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    image: none;
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+QCheckBox::indicator:disabled {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
 }
 
 QMessageBox {
@@ -1829,7 +1867,7 @@ class GeoPackageProjectManagerDialog(QDialog):
             )
             progress.setWindowTitle(self.tr("⚙️ Ottimizzazione"))
             progress.setStyleSheet(MODERN_STYLE)
-            progress.setWindowModality(Qt.WindowModal)
+            progress.setWindowModality(WindowModal)
             progress.show()
             QApplication.processEvents()
 
@@ -1955,7 +1993,7 @@ class GeoPackageProjectManagerDialog(QDialog):
             )
             progress.setWindowTitle(self.tr("📊 Aggiornamento Metadati"))
             progress.setStyleSheet(MODERN_STYLE)
-            progress.setWindowModality(Qt.WindowModal)
+            progress.setWindowModality(WindowModal)
             progress.show()
             QApplication.processEvents()
 

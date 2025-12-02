@@ -27,7 +27,12 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 ### 🛠️ Corretto
 - **Compatibilità Qt5/Qt6**: Risolti problemi con i tooltip su diverse versioni di Qt
   - Aggiunto enum compatibile `EventToolTip` per gestire `QEvent.ToolTip`
+  - Aggiunto enum compatibile `WindowModal` per gestire `Qt.WindowModal`
   - I tooltip ora funzionano correttamente sia su Qt5 che Qt6
+- **Visibilità checkbox in Qt6**: Aggiunto stile CSS esplicito per QCheckBox
+  - Risolto problema di testo invisibile nei checkbox con Qt6
+  - Checkbox ora visibili e stilizzati correttamente su tutte le versioni Qt
+- **Progress dialog**: Risolto errore AttributeError in aggiornamento metadati batch
 
 ### 🌍 Traduzioni
 - Aggiornate traduzioni italiane e inglesi per tutte le nuove funzionalità

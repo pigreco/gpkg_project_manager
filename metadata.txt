@@ -69,7 +69,7 @@ changelog=3.3.0
     • Sistema metadati completo: estrazione e salvataggio automatico di metadati dettagliati per ogni progetto
     • Tooltip intelligenti: visualizzazione informazioni complete al passaggio del mouse (data, dimensione, layer count)
     • Aggiornamento batch metadati: nuovo pulsante per rigenerare tutti i metadati con un clic
-    • Fix compatibilità Qt5/Qt6: risolti problemi con i tooltip su diverse versioni di Qt
+    • Fix compatibilità Qt5/Qt6: risolti problemi con tooltip e checkbox su diverse versioni di Qt
     • Fallback intelligente: i tooltip mostrano sempre almeno la dimensione del progetto
     • Tabella metadata: nuova tabella qgis_projects_metadata per informazioni dettagliate
     3.2.0
@@ -100,7 +100,7 @@ changelog[en]=3.3.0
     • Complete metadata system: automatic extraction and saving of detailed metadata for each project
     • Smart tooltips: display complete information on mouse hover (date, size, layer count)
     • Batch metadata update: new button to regenerate all metadata with one click
-    • Qt5/Qt6 compatibility fix: resolved tooltip issues on different Qt versions
+    • Qt5/Qt6 compatibility fix: resolved tooltip and checkbox issues on different Qt versions
     • Smart fallback: tooltips always show at least the project size
     • Metadata table: new qgis_projects_metadata table for detailed project information
     3.2.0
