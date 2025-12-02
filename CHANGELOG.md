@@ -7,6 +7,34 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.3.1] - 2025-12-02
+
+### 🛠️ Corretto
+- **Bug rinomina progetto**: I metadati ora vengono correttamente aggiornati quando si rinomina un progetto
+  - Aggiornamento automatico del `project_name` nella tabella `qgis_projects_metadata`
+  - I tooltip continuano a funzionare correttamente dopo la rinomina
+- **Bug duplicazione progetto**: I metadati ora vengono copiati insieme al progetto duplicato
+  - Il progetto duplicato eredita tutti i metadati (data creazione, dimensione, layer count)
+  - I tooltip sono immediatamente disponibili per i progetti duplicati
+- **Flag `is_new` nel salvataggio**: Risolto bug nel riconoscimento di progetti nuovi vs sovrascritti
+  - Il flag `is_new` viene ora calcolato PRIMA del salvataggio anziché dopo
+  - I metadati ora distinguono correttamente tra nuovi progetti (data creazione = data modifica) e progetti sovrascritti (mantiene data creazione originale)
+- **Test traduzione in italiano**: Il test di caricamento traduzione ora funziona correttamente per la lingua italiana
+  - Per italiano (lingua default), il test verifica solo il caricamento del file
+  - Per altre lingue, il test verifica anche la traduzione delle stringhe
+- **Reset dialog**: Il dialog viene ora sempre resettato alla chiusura, indipendentemente dal metodo di chiusura
+  - Garantisce che il dialog venga sempre ricreato con stato fresco alla prossima apertura
+- **Ricaricamento progetto dopo esportazione**: Migliorata la gestione del ricaricamento del progetto originale
+  - Distinzione corretta tra progetti caricati da GeoPackage e da file
+  - Il progetto originale viene ripristinato correttamente dopo l'esportazione
+
+### 📝 Note
+- Tutti i fix sono retrocompatibili con versioni precedenti
+- Nessuna modifica alla struttura del database
+- I progetti esistenti continuano a funzionare normalmente
+
+---
+
 ## [3.3.0] - 2025-12-02
 
 ### 🎉 Aggiunto

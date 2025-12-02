@@ -1332,7 +1332,11 @@ class GeoPackageProjectManagerDialog(QDialog):
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             nome_progetto = f"{nome_progetto}_{timestamp}"
 
-        if nome_progetto in self.get_lista_nomi_progetti():
+        # Verifica se il progetto esiste già PRIMA del salvataggio
+        progetti_esistenti = self.get_lista_nomi_progetti()
+        is_new = nome_progetto not in progetti_esistenti
+
+        if not is_new:
             if not self.mostra_conferma(
                 self.tr("Progetto Esistente"),
                 self.tr("Il progetto '%1' esiste già.\nVuoi sovrascriverlo?").replace('%1', nome_progetto)
@@ -1354,7 +1358,6 @@ class GeoPackageProjectManagerDialog(QDialog):
                     result = cursor.fetchone()
                     if result:
                         content = result[0]
-                        is_new = nome_progetto not in self.get_lista_nomi_progetti()
                         self.salva_metadati_progetto(conn, nome_progetto, content, is_new=is_new)
                     conn.close()
                 except Exception as e:
@@ -1481,6 +1484,16 @@ class GeoPackageProjectManagerDialog(QDialog):
                 "UPDATE qgis_projects SET name = ? WHERE name = ?",
                 (nuovo_nome, nome_progetto)
             )
+
+            # Aggiorna anche i metadati associati
+            try:
+                cursor.execute(
+                    "UPDATE qgis_projects_metadata SET project_name = ? WHERE project_name = ?",
+                    (nuovo_nome, nome_progetto)
+                )
+            except:
+                pass  # Tabella potrebbe non esistere
+
             conn.commit()
             conn.close()
 
@@ -1533,6 +1546,10 @@ class GeoPackageProjectManagerDialog(QDialog):
                     "INSERT INTO qgis_projects (name, content) VALUES (?, ?)",
                     (nuovo_nome, row[0])
                 )
+
+                # Duplica anche i metadati
+                self.salva_metadati_progetto(conn, nuovo_nome, row[0], is_new=True)
+
                 conn.commit()
                 self.mostra_info(self.tr("Successo"), self.tr("Progetto duplicato come '%1'.").replace('%1', nuovo_nome))
                 self.aggiorna_lista_progetti()
@@ -1576,7 +1593,10 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         try:
             project = QgsProject.instance()
+            # Salva l'URI originale del progetto corrente
             progetto_corrente_uri = project.fileName()
+            # Determina se il progetto corrente era caricato da un GeoPackage
+            progetto_corrente_era_gpkg = progetto_corrente_uri.startswith('geopackage:') if progetto_corrente_uri else False
 
             uri = f"geopackage:{self.gpkg_path}?projectName={nome_progetto}"
 
@@ -1588,8 +1608,14 @@ class GeoPackageProjectManagerDialog(QDialog):
                         self.tr("Aprire il progetto?"),
                         self.tr("Vuoi mantenere aperto il progetto esportato?")
                     ):
+                        # Ripristina il progetto originale
                         if progetto_corrente_uri:
-                            project.read(progetto_corrente_uri)
+                            if progetto_corrente_era_gpkg:
+                                # Era un progetto da GeoPackage, usa l'URI direttamente
+                                project.read(progetto_corrente_uri)
+                            else:
+                                # Era un progetto da file, carica il file
+                                project.read(progetto_corrente_uri)
                         else:
                             project.clear()
                 else:

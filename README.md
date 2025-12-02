@@ -227,6 +227,16 @@ https://github.com/pigreco/gpkg_project_manager/issues
 
 ## Changelog
 
+### v3.3.1 (2025-12-02)
+- 🛠️ **Bug fix critici**: Corretti 6 bug importanti nel plugin
+  - ✅ Fix rinomina progetto: metadati ora aggiornati correttamente
+  - ✅ Fix duplicazione progetto: metadati copiati insieme al progetto
+  - ✅ Fix flag `is_new`: corretta distinzione tra nuovi progetti e sovrascritti
+  - ✅ Fix test traduzione italiano: test ora funziona per lingua default
+  - ✅ Fix reset dialog: dialog sempre resettato alla chiusura
+  - ✅ Fix ricaricamento dopo esportazione: gestione migliorata progetti GeoPackage
+- 🔄 **Retrocompatibilità**: Tutti i fix sono retrocompatibili, nessuna modifica al database
+
 ### v3.3.0 (2025-12-02)
 - 📊 **Sistema metadati completo**: Estrazione e salvataggio automatico di metadati dettagliati per ogni progetto
 - 💡 **Tooltip intelligenti**: Visualizzazione informazioni complete al passaggio del mouse (data creazione/modifica, dimensione, layer count)

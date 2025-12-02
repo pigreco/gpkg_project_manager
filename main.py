@@ -97,12 +97,17 @@ class GeoPackageProjectManagerPlugin:
             if self.translator.load(locale_path):
                 QCoreApplication.installTranslator(self.translator)
                 print(f"✓ QM Translator loaded: {locale}")
-                test = QCoreApplication.translate('GeoPackageProjectManagerDialog', '📂 Sfoglia')
-                print(f"✓ Test translation: {test}")
-                if test != '📂 Sfoglia':  # Translation worked
-                    return True
+                # Test translation only for non-Italian languages
+                if locale != 'it':
+                    test = QCoreApplication.translate('GeoPackageProjectManagerDialog', '📂 Sfoglia')
+                    print(f"✓ Test translation: {test}")
+                    if test != '📂 Sfoglia':  # Translation worked
+                        return True
+                    else:
+                        print(f"⚠️  QM loaded but translation not working, trying TS fallback...")
                 else:
-                    print(f"⚠️  QM loaded but translation not working, trying TS fallback...")
+                    # For Italian, just verify the file was loaded
+                    return True
 
         # Fallback to .ts file direct loading
         if TS_TRANSLATOR_AVAILABLE:
@@ -244,5 +249,5 @@ class GeoPackageProjectManagerPlugin:
         result = self.dialog.exec()
 
         # Reset dialog reference when closed to allow recreation with fresh state
-        if result:
-            self.dialog = None
+        # This ensures the dialog is always recreated on next open
+        self.dialog = None
