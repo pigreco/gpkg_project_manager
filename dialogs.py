@@ -845,10 +845,6 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         try:
             conn = sqlite3.connect(self.gpkg_path)
-            
-            # Assicurati che la tabella metadata esista
-            self.crea_tabella_metadata(conn)
-            
             cursor = conn.cursor()
 
             cursor.execute("""
@@ -1317,6 +1313,8 @@ class GeoPackageProjectManagerDialog(QDialog):
                 # Salva metadati del progetto
                 try:
                     conn = sqlite3.connect(self.gpkg_path)
+                    # Assicurati che la tabella metadata esista
+                    self.crea_tabella_metadata(conn)
                     cursor = conn.cursor()
                     cursor.execute("SELECT content FROM qgis_projects WHERE name = ?", (nome_progetto,))
                     result = cursor.fetchone()
