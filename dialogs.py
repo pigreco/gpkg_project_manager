@@ -28,8 +28,9 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView, QSizePolicy, QInputDialog,
     QToolButton, QWidget, QProgressDialog, QApplication, QMenu, QCheckBox
 )
-from qgis.PyQt.QtCore import Qt, QSize, QTimer, QSettings, QCoreApplication, QUrl
+from qgis.PyQt.QtCore import Qt, QSize, QTimer, QSettings, QCoreApplication, QUrl, QEvent
 from qgis.PyQt.QtGui import QFont, QColor, QPalette, QIcon, QDesktopServices
+from qgis.PyQt.QtWidgets import QToolTip
 
 import sqlite3
 import os
@@ -90,6 +91,9 @@ LineEditNormal = get_qt_enum(QLineEdit, 'Normal') or 0
 
 # QToolButton
 InstantPopup = get_qt_enum(QToolButton, 'InstantPopup') or 2
+
+# QEvent
+EventToolTip = get_qt_enum(QEvent, 'ToolTip') or 17
 
 
 # ============================================================
@@ -534,6 +538,15 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.btn_ottimizza.clicked.connect(self.ottimizza_database)
         clone_layout.addWidget(self.btn_ottimizza)
 
+        clone_layout.addSpacing(10)
+
+        # Pulsante Aggiorna Metadati
+        self.btn_aggiorna_metadati = QPushButton(self.tr("📊 Aggiorna Metadati"))
+        self.btn_aggiorna_metadati.setObjectName("secondaryButton")
+        self.btn_aggiorna_metadati.setToolTip(self.tr("Rigenera i metadati per tutti i progetti (data, dimensione, layer)"))
+        self.btn_aggiorna_metadati.clicked.connect(self.aggiorna_tutti_metadati)
+        clone_layout.addWidget(self.btn_aggiorna_metadati)
+
         # Checkbox per aggiungere versione al clone
         self.chk_clone_add_version = QCheckBox(self.tr("Versioning (v01, v02, ...)"))
         self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
@@ -603,6 +616,8 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.lista_progetti.itemDoubleClicked.connect(self.carica_progetto)
         self.lista_progetti.setContextMenuPolicy(CustomContextMenu)
         self.lista_progetti.customContextMenuRequested.connect(self.mostra_menu_contestuale)
+        self.lista_progetti.setMouseTracking(True)
+        self.lista_progetti.viewport().installEventFilter(self)
         progetti_layout.addWidget(self.lista_progetti)
 
         # Pulsanti azioni - Tutti in una riga
@@ -663,7 +678,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.2 • Qt5/Qt6 Compatible"))
+        version_label = QLabel(self.tr("v3.3 • Qt5/Qt6 Compatible"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
@@ -846,6 +861,245 @@ class GeoPackageProjectManagerDialog(QDialog):
         except Exception as e:
             self.gpkg_info_label.setText(self.tr("ℹ️ Info: Errore lettura"))
 
+    def crea_tabella_metadata(self, conn):
+        """Crea la tabella dei metadati se non esiste."""
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS qgis_projects_metadata (
+                    project_name TEXT PRIMARY KEY,
+                    created_date TEXT,
+                    modified_date TEXT,
+                    size_bytes INTEGER,
+                    layer_count INTEGER,
+                    vector_count INTEGER,
+                    raster_count INTEGER
+                )
+            """)
+            conn.commit()
+        except Exception as e:
+            pass  # Tabella già esistente o errore non critico
+
+    def estrai_metadati_progetto(self, content):
+        """Estrae metadati automatici dal contenuto del progetto."""
+        metadata = {
+            'layer_count': 0,
+            'vector_count': 0,
+            'raster_count': 0,
+            'size_bytes': len(content) if content else 0
+        }
+
+        try:
+            # Decomprimi il contenuto del progetto
+            files_content, is_compressed, was_hex = self._decomprimi_progetto(content)
+
+            # Trova il contenuto XML principale
+            qgs_content = None
+            for file_name, file_content in files_content.items():
+                if file_name.endswith('.qgs') or file_name == 'content' or not file_name.endswith('.db'):
+                    try:
+                        qgs_content = file_content.decode('utf-8')
+                        break
+                    except:
+                        continue
+
+            if qgs_content:
+                # Conta i layer usando regex semplice (più veloce di XML parsing completo)
+                import re
+                # Cerca tag <maplayer con attributo type
+                vector_pattern = r'<maplayer[^>]*type="vector"'
+                raster_pattern = r'<maplayer[^>]*type="raster"'
+
+                metadata['vector_count'] = len(re.findall(vector_pattern, qgs_content))
+                metadata['raster_count'] = len(re.findall(raster_pattern, qgs_content))
+                metadata['layer_count'] = metadata['vector_count'] + metadata['raster_count']
+
+        except Exception as e:
+            # Se parsing fallisce, ritorna metadati base
+            pass
+
+        return metadata
+
+    def salva_metadati_progetto(self, conn, project_name, content, is_new=True):
+        """Salva o aggiorna i metadati del progetto."""
+        try:
+            # Assicurati che la tabella esista
+            self.crea_tabella_metadata(conn)
+
+            # Estrai metadati dal progetto
+            metadata = self.estrai_metadati_progetto(content)
+
+            cursor = conn.cursor()
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            if is_new:
+                # Nuovo progetto: created_date = modified_date
+                cursor.execute("""
+                    INSERT OR REPLACE INTO qgis_projects_metadata
+                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (project_name, now, now, metadata['size_bytes'], metadata['layer_count'],
+                      metadata['vector_count'], metadata['raster_count']))
+            else:
+                # Aggiornamento: mantieni created_date, aggiorna solo modified_date
+                cursor.execute("""
+                    INSERT OR REPLACE INTO qgis_projects_metadata
+                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
+                    VALUES (
+                        ?,
+                        COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
+                        ?,
+                        ?, ?, ?, ?
+                    )
+                """, (project_name, project_name, now, now, metadata['size_bytes'],
+                      metadata['layer_count'], metadata['vector_count'], metadata['raster_count']))
+
+            conn.commit()
+        except Exception as e:
+            pass  # Errore non critico
+
+    def leggi_metadati_progetto(self, project_name):
+        """Legge i metadati di un progetto."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            return None
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            self.crea_tabella_metadata(conn)
+
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT created_date, modified_date, size_bytes, layer_count, vector_count, raster_count
+                FROM qgis_projects_metadata
+                WHERE project_name = ?
+            """, (project_name,))
+
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                return {
+                    'created_date': result[0],
+                    'modified_date': result[1],
+                    'size_bytes': result[2],
+                    'layer_count': result[3],
+                    'vector_count': result[4],
+                    'raster_count': result[5]
+                }
+        except Exception as e:
+            pass
+
+        return None
+
+    def eventFilter(self, obj, event):
+        """Event filter per tooltip personalizzati nella lista progetti."""
+        if obj == self.lista_progetti.viewport() and event.type() == EventToolTip:
+            # Trova l'item sotto il mouse
+            pos = event.pos()
+            item = self.lista_progetti.itemAt(pos)
+
+            if item:
+                project_name = item.data(UserRole)
+                if project_name:
+                    # Leggi metadati
+                    metadata = self.leggi_metadati_progetto(project_name)
+
+                    if metadata:
+                        # Formatta dimensione
+                        size_bytes = metadata.get('size_bytes', 0)
+                        if size_bytes < 1024:
+                            size_str = f"{size_bytes} B"
+                        elif size_bytes < 1024 * 1024:
+                            size_str = f"{size_bytes / 1024:.1f} KB"
+                        else:
+                            size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+
+                        # Formatta date
+                        created = metadata.get('created_date', 'N/A')
+                        if created and created != 'N/A':
+                            try:
+                                from datetime import datetime
+                                dt = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
+                                created = dt.strftime('%d/%m/%Y %H:%M')
+                            except:
+                                pass
+
+                        modified = metadata.get('modified_date', 'N/A')
+                        if modified and modified != 'N/A':
+                            try:
+                                from datetime import datetime
+                                dt = datetime.strptime(modified, '%Y-%m-%d %H:%M:%S')
+                                modified = dt.strftime('%d/%m/%Y %H:%M')
+                            except:
+                                pass
+
+                        # Costruisci info layer
+                        layer_count = metadata.get('layer_count', 0)
+                        vector_count = metadata.get('vector_count', 0)
+                        raster_count = metadata.get('raster_count', 0)
+
+                        layer_info = f"{layer_count}"
+                        if vector_count > 0 or raster_count > 0:
+                            layer_info += f" ({vector_count}v, {raster_count}r)"
+
+                        # Crea tooltip HTML
+                        tooltip_html = f"""
+                        <div style='background-color: #f8f9fa; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;'>
+                            <div style='background-color: #3b82f6; color: white; padding: 6px; margin: -8px -8px 8px -8px; border-radius: 4px 4px 0 0; font-weight: bold;'>
+                                📊 {project_name}
+                            </div>
+                            <table style='border-collapse: collapse; width: 100%;'>
+                                <tr><td style='padding: 3px 8px 3px 0;'><b>📅 {self.tr("Creato")}:</b></td><td style='padding: 3px 0;'>{created}</td></tr>
+                                <tr><td style='padding: 3px 8px 3px 0;'><b>🔄 {self.tr("Modificato")}:</b></td><td style='padding: 3px 0;'>{modified}</td></tr>
+                                <tr><td style='padding: 3px 8px 3px 0;'><b>💾 {self.tr("Dimensione")}:</b></td><td style='padding: 3px 0;'>{size_str}</td></tr>
+                                <tr><td style='padding: 3px 8px 3px 0;'><b>🗂️ {self.tr("Layer")}:</b></td><td style='padding: 3px 0;'>{layer_info}</td></tr>
+                            </table>
+                        </div>
+                        """
+
+                        QToolTip.showText(event.globalPos(), tooltip_html, self.lista_progetti)
+                        return True
+                    else:
+                        # Fallback: leggi almeno la dimensione del progetto direttamente dal database
+                        try:
+                            conn = sqlite3.connect(self.gpkg_path)
+                            cursor = conn.cursor()
+                            cursor.execute("SELECT length(content) FROM qgis_projects WHERE name = ?", (project_name,))
+                            result = cursor.fetchone()
+                            conn.close()
+
+                            if result and result[0]:
+                                size_bytes = result[0]
+                                if size_bytes < 1024:
+                                    size_str = f"{size_bytes} B"
+                                elif size_bytes < 1024 * 1024:
+                                    size_str = f"{size_bytes / 1024:.1f} KB"
+                                else:
+                                    size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+
+                                tooltip_simple = f"""
+                                <div style='background-color: #f8f9fa; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;'>
+                                    <div style='background-color: #6b7280; color: white; padding: 6px; margin: -8px -8px 8px -8px; border-radius: 4px 4px 0 0; font-weight: bold;'>
+                                        📋 {project_name}
+                                    </div>
+                                    <div style='padding: 5px 0;'>
+                                        <b>💾 {self.tr("Dimensione")}:</b> {size_str}
+                                    </div>
+                                    <div style='padding: 5px 0; font-size: 10px; color: #6b7280; font-style: italic;'>
+                                        {self.tr("Dettagli completi disponibili dopo il primo salvataggio")}
+                                    </div>
+                                </div>
+                                """
+                            else:
+                                tooltip_simple = f"<b>📋 {project_name}</b>"
+                        except:
+                            tooltip_simple = f"<b>📋 {project_name}</b>"
+
+                        QToolTip.showText(event.globalPos(), tooltip_simple, self.lista_progetti)
+                        return True
+
+        return super().eventFilter(obj, event)
+
     def pulisci_nome(self, nome):
         """Pulisce il nome del progetto."""
         return "".join(c for c in nome if c.isalnum() or c in ('_', '-', ' '))
@@ -1001,6 +1255,20 @@ class GeoPackageProjectManagerDialog(QDialog):
             uri = f"geopackage:{self.gpkg_path}?projectName={nome_progetto}"
 
             if project.write(uri):
+                # Salva metadati del progetto
+                try:
+                    conn = sqlite3.connect(self.gpkg_path)
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT content FROM qgis_projects WHERE name = ?", (nome_progetto,))
+                    result = cursor.fetchone()
+                    if result:
+                        content = result[0]
+                        is_new = nome_progetto not in self.get_lista_nomi_progetti()
+                        self.salva_metadati_progetto(conn, nome_progetto, content, is_new=is_new)
+                    conn.close()
+                except Exception as e:
+                    pass  # Errore non critico
+
                 self.mostra_info(self.tr("Successo"), self.tr("Progetto '%1' salvato!").replace('%1', nome_progetto))
                 self.aggiorna_lista_progetti()
                 iface.messageBar().pushMessage(
@@ -1075,6 +1343,13 @@ class GeoPackageProjectManagerDialog(QDialog):
             conn = sqlite3.connect(self.gpkg_path)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM qgis_projects WHERE name = ?", (nome_progetto,))
+
+            # Elimina anche i metadati
+            try:
+                cursor.execute("DELETE FROM qgis_projects_metadata WHERE project_name = ?", (nome_progetto,))
+            except:
+                pass  # Tabella potrebbe non esistere
+
             conn.commit()
             conn.close()
 
@@ -1629,4 +1904,121 @@ class GeoPackageProjectManagerDialog(QDialog):
             self.mostra_errore(
                 self.tr("Errore"),
                 self.tr("Errore durante l'ottimizzazione:\n{}").format(str(e) + "\n\n" + traceback.format_exc())
+            )
+
+    def aggiorna_tutti_metadati(self):
+        """Rigenera i metadati per tutti i progetti nel GeoPackage."""
+        if not self.gpkg_path:
+            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
+            return
+
+        if not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Errore"), self.tr("Il file GeoPackage non esiste."))
+            return
+
+        try:
+            # Conta progetti totali
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT COUNT(*) FROM qgis_projects")
+            total_projects = cursor.fetchone()[0]
+            conn.close()
+
+            if total_projects == 0:
+                self.mostra_info(self.tr("Nessun Progetto"), self.tr("Non ci sono progetti nel GeoPackage."))
+                return
+
+            # Dialog di conferma
+            msg = QMessageBox(self)
+            msg.setIcon(MsgBoxQuestion)
+            msg.setWindowTitle(self.tr("📊 Aggiorna Metadati"))
+            msg.setText(
+                self.tr("Progetti trovati: {0}\n\n"
+                        "Questa operazione rigenererà i metadati per tutti i progetti:\n"
+                        "• Data creazione e modifica\n"
+                        "• Dimensione del progetto\n"
+                        "• Conteggio layer (vettoriali/raster)\n\n"
+                        "Vuoi continuare?").format(total_projects)
+            )
+            msg.setStandardButtons(MsgBoxYes | MsgBoxNo)
+            msg.setDefaultButton(MsgBoxYes)
+            msg.setStyleSheet(MODERN_STYLE)
+
+            if msg.exec() != MsgBoxYes:
+                return
+
+            # Progress dialog
+            progress = QProgressDialog(
+                self.tr("Elaborazione metadati in corso..."),
+                self.tr("Annulla"), 0, total_projects, self
+            )
+            progress.setWindowTitle(self.tr("📊 Aggiornamento Metadati"))
+            progress.setStyleSheet(MODERN_STYLE)
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
+            QApplication.processEvents()
+
+            # Apri connessione
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            # Assicurati che la tabella metadati esista
+            self.crea_tabella_metadata(conn)
+
+            # Leggi tutti i progetti
+            cursor.execute("SELECT name, content FROM qgis_projects ORDER BY name")
+            progetti = cursor.fetchall()
+
+            progetti_aggiornati = 0
+            progetti_saltati = 0
+
+            for idx, (nome_progetto, content) in enumerate(progetti):
+                # Verifica se l'utente ha annullato
+                if progress.wasCanceled():
+                    break
+
+                # Aggiorna progress
+                progress.setValue(idx)
+                progress.setLabelText(self.tr("Elaborazione: {0}").format(nome_progetto))
+                QApplication.processEvents()
+
+                if not content:
+                    progetti_saltati += 1
+                    continue
+
+                try:
+                    # Salva i metadati (is_new=False per preservare la data di creazione se esiste)
+                    self.salva_metadati_progetto(conn, nome_progetto, content, is_new=False)
+                    progetti_aggiornati += 1
+                except Exception as e:
+                    progetti_saltati += 1
+                    continue
+
+            conn.close()
+            progress.setValue(total_projects)
+
+            # Dialog risultato
+            result_msg = QMessageBox(self)
+            result_msg.setIcon(MsgBoxInformation)
+            result_msg.setWindowTitle(self.tr("✅ Metadati Aggiornati!"))
+            result_msg.setText(
+                self.tr("Elaborazione completata!\n\n"
+                        "Progetti aggiornati: {0}\n"
+                        "Progetti saltati: {1}\n"
+                        "Totale: {2}\n\n"
+                        "I tooltip ora mostreranno informazioni complete.").format(
+                    progetti_aggiornati,
+                    progetti_saltati,
+                    total_projects
+                )
+            )
+            result_msg.setStyleSheet(MODERN_STYLE)
+            result_msg.exec()
+
+        except Exception as e:
+            import traceback
+            self.mostra_errore(
+                self.tr("Errore"),
+                self.tr("Errore durante l'aggiornamento metadati:\n{}").format(str(e) + "\n\n" + traceback.format_exc())
             )

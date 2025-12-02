@@ -123,8 +123,8 @@
         <translation>💡 Double click to load • Right click for context menu</translation>
     </message>
     <message>
-        <source>v3.0 • Qt5/Qt6 Compatible</source>
-        <translation>v3.0 • Qt5/Qt6 Compatible</translation>
+        <source>v3.3 • Qt5/Qt6 Compatible</source>
+        <translation>v3.3 • Qt5/Qt6 Compatible</translation>
     </message>
     <message>
         <source>Chiudi</source>
@@ -475,6 +475,106 @@ Time elapsed: {4:.1f} seconds</translation>
     <message>
         <source>Aiuto / Help</source>
         <translation>Help / Aiuto</translation>
+    </message>
+    <message>
+        <source>Creato</source>
+        <translation>Created</translation>
+    </message>
+    <message>
+        <source>Modificato</source>
+        <translation>Modified</translation>
+    </message>
+    <message>
+        <source>Dimensione</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation>Layers</translation>
+    </message>
+    <message>
+        <source>Metadati non disponibili</source>
+        <translation>Metadata not available</translation>
+    </message>
+    <message>
+        <source>Dettagli completi disponibili dopo il primo salvataggio</source>
+        <translation>Full details available after first save</translation>
+    </message>
+    <message>
+        <source>📊 Aggiorna Metadati</source>
+        <translation>📊 Update Metadata</translation>
+    </message>
+    <message>
+        <source>Rigenera i metadati per tutti i progetti (data, dimensione, layer)</source>
+        <translation>Regenerate metadata for all projects (date, size, layers)</translation>
+    </message>
+    <message>
+        <source>Nessun Progetto</source>
+        <translation>No Projects</translation>
+    </message>
+    <message>
+        <source>Non ci sono progetti nel GeoPackage.</source>
+        <translation>There are no projects in the GeoPackage.</translation>
+    </message>
+    <message>
+        <source>Progetti trovati: {0}
+
+Questa operazione rigenererà i metadati per tutti i progetti:
+• Data creazione e modifica
+• Dimensione del progetto
+• Conteggio layer (vettoriali/raster)
+
+Vuoi continuare?</source>
+        <translation>Projects found: {0}
+
+This operation will regenerate metadata for all projects:
+• Creation and modification date
+• Project size
+• Layer count (vector/raster)
+
+Do you want to continue?</translation>
+    </message>
+    <message>
+        <source>Elaborazione metadati in corso...</source>
+        <translation>Processing metadata...</translation>
+    </message>
+    <message>
+        <source>Annulla</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>📊 Aggiornamento Metadati</source>
+        <translation>📊 Metadata Update</translation>
+    </message>
+    <message>
+        <source>Elaborazione: {0}</source>
+        <translation>Processing: {0}</translation>
+    </message>
+    <message>
+        <source>✅ Metadati Aggiornati!</source>
+        <translation>✅ Metadata Updated!</translation>
+    </message>
+    <message>
+        <source>Elaborazione completata!
+
+Progetti aggiornati: {0}
+Progetti saltati: {1}
+Totale: {2}
+
+I tooltip ora mostreranno informazioni complete.</source>
+        <translation>Processing completed!
+
+Updated projects: {0}
+Skipped projects: {1}
+Total: {2}
+
+Tooltips will now show complete information.</translation>
+    </message>
+    <message>
+        <source>Errore durante l'aggiornamento metadati:
+{}</source>
+        <translation>Error during metadata update:
+{}</translation>
     </message>
 </context>
 </TS>

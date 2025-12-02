@@ -46,6 +46,13 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Statistiche dettagliate** / **Detailed statistics**: Mostra spazio risparmiato, percentuale di riduzione e tempo impiegato / Shows space saved, reduction percentage and time elapsed
 - **Operazione VACUUM** / **VACUUM operation**: Rimuove spazio inutilizzato e ottimizza le tabelle del database / Removes unused space and optimizes database tables
 
+### 📊 Sistema Metadati / Metadata System
+- **Metadati automatici** / **Automatic metadata**: Estrae e salva automaticamente metadati dettagliati per ogni progetto / Automatically extracts and saves detailed metadata for each project
+- **Tooltip intelligenti** / **Smart tooltips**: Visualizza informazioni complete al passaggio del mouse sui progetti / Display complete information when hovering over projects
+- **Aggiornamento batch** / **Batch update**: Rigenera i metadati per tutti i progetti con un solo clic / Regenerate metadata for all projects with a single click
+- **Info dettagliate** / **Detailed info**: Data creazione/modifica, dimensione progetto, conteggio layer (vettoriali/raster) / Creation/modification date, project size, layer count (vector/raster)
+- **Fallback intelligente** / **Smart fallback**: Mostra informazioni base anche per progetti senza metadati completi / Shows basic information even for projects without complete metadata
+
 ### 🎨 Interfaccia Moderna / Modern Interface
 - Design moderno e pulito / Modern and clean design
 - Supporto completo Qt5/Qt6 / Full Qt5/Qt6 support
@@ -95,7 +102,19 @@ Dalla lista dei progetti puoi:
 - **Tasto destro**: Menu contestuale con tutte le opzioni
 - **Pulsanti**: Usa i pulsanti dedicati per ogni azione
 
-#### 4. Clona il GeoPackage
+#### 4. Visualizza Metadati Progetti
+Passando il mouse sui progetti nella lista:
+- **Tooltip con metadati completi**: Mostra data creazione/modifica, dimensione, numero layer (vettoriali/raster)
+- **Tooltip base**: Per progetti senza metadati completi, mostra almeno la dimensione
+
+#### 5. Aggiorna Metadati
+Per rigenerare i metadati di tutti i progetti:
+1. Clicca **📊 Aggiorna Metadati**
+2. Conferma l'operazione
+3. Il plugin estrae automaticamente i metadati da tutti i progetti salvati
+4. I tooltip mostreranno ora informazioni complete
+
+#### 6. Clona il GeoPackage
 Quando devi creare una copia del GeoPackage:
 1. Clicca **🔀 Clona GeoPackage**
 2. Scegli il percorso di destinazione
@@ -200,6 +219,15 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - GitHub: [@pigreco](https://github.com/pigreco)
 
 ## Changelog
+
+### v3.3.0 (2025-12-02)
+- 📊 **Sistema metadati completo**: Estrazione e salvataggio automatico di metadati dettagliati per ogni progetto
+- 💡 **Tooltip intelligenti**: Visualizzazione informazioni complete al passaggio del mouse (data creazione/modifica, dimensione, layer count)
+- 🔄 **Aggiornamento batch metadati**: Nuovo pulsante per rigenerare tutti i metadati con un clic
+- 🛠️ **Fix compatibilità Qt5/Qt6**: Risolti problemi con i tooltip su diverse versioni di Qt
+- 🎯 **Fallback intelligente**: I tooltip mostrano sempre almeno la dimensione del progetto, anche senza metadati completi
+- 🌍 **Traduzioni aggiornate**: Tutte le nuove funzionalità tradotte in italiano e inglese
+- 🗃️ **Tabella metadata**: Nuova tabella `qgis_projects_metadata` per informazioni dettagliate sui progetti
 
 ### v3.2.0 (2025)
 - ⚙️ **Ottimizzazione database**: Compatta il GeoPackage con VACUUM SQLite per ridurre dimensioni e migliorare performance

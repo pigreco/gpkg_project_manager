@@ -3,7 +3,7 @@ name=GeoPackage Project Manager
 qgisMinimumVersion=3.0
 description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
 description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
-version=3.2.0
+version=3.3.0
 author=Salvatore Fiandaca (Totò)
 email=pigrecoinfinito@gmail.com
 
@@ -65,7 +65,14 @@ server=False
 # Supported languages: English (en), Italian (it - default)
 available_languages=en,it
 
-changelog=3.2.0
+changelog=3.3.0
+    • Sistema metadati completo: estrazione e salvataggio automatico di metadati dettagliati per ogni progetto
+    • Tooltip intelligenti: visualizzazione informazioni complete al passaggio del mouse (data, dimensione, layer count)
+    • Aggiornamento batch metadati: nuovo pulsante per rigenerare tutti i metadati con un clic
+    • Fix compatibilità Qt5/Qt6: risolti problemi con i tooltip su diverse versioni di Qt
+    • Fallback intelligente: i tooltip mostrano sempre almeno la dimensione del progetto
+    • Tabella metadata: nuova tabella qgis_projects_metadata per informazioni dettagliate
+    3.2.0
     • Ottimizzazione database: compatta il GeoPackage con VACUUM SQLite per ridurre dimensioni e migliorare performance
     • Info GeoPackage in tempo reale: visualizza dimensione file e numero progetti aggiornati automaticamente
     • Statistiche ottimizzazione: mostra spazio risparmiato, percentuale di riduzione e tempo impiegato
@@ -89,7 +96,14 @@ changelog=3.2.0
     • Versione iniziale del plugin
     • Gestione base progetti in GeoPackage
 
-changelog[en]=3.2.0
+changelog[en]=3.3.0
+    • Complete metadata system: automatic extraction and saving of detailed metadata for each project
+    • Smart tooltips: display complete information on mouse hover (date, size, layer count)
+    • Batch metadata update: new button to regenerate all metadata with one click
+    • Qt5/Qt6 compatibility fix: resolved tooltip issues on different Qt versions
+    • Smart fallback: tooltips always show at least the project size
+    • Metadata table: new qgis_projects_metadata table for detailed project information
+    3.2.0
     • Database optimization: compact GeoPackage with SQLite VACUUM to reduce size and improve performance
     • Real-time GeoPackage info: display file size and number of projects updated automatically
     • Optimization statistics: shows space saved, reduction percentage and time elapsed
