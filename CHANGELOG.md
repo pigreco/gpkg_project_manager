@@ -7,6 +7,37 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.3.2] - 2025-12-03
+
+### 🛠️ Corretto
+- **Gestione date di modifica**: Corretta la logica di aggiornamento delle date di modifica dei progetti
+  - La data di modifica (`modified_date`) ora si aggiorna SOLO quando si sovrascrive realmente un progetto
+  - Aggiunto parametro `update_modified_date` al metodo `salva_metadati_progetto()`
+  - Quando si usa "📊 Aggiorna Metadati", le date di modifica rimangono invariate (aggiorna solo dimensione/layer count)
+  - Aggiunto parametro `force_overwrite` al metodo `salva_progetto()` per gestire correttamente la sovrascrittura
+  - Il pulsante "⟳ Sovrascrivi" ora imposta correttamente `is_new=False` per aggiornare la data di modifica
+
+### 🎨 Interfaccia
+- **Doppia interfaccia**: Mantenute entrambe le versioni per offrire scelta all'utente
+  - **dialogs.py**: Interfaccia originale con lista verticale dei progetti
+  - **dialogs_table.py**: Interfaccia moderna con tabella a colonne (attualmente in uso)
+  - `dialogs_table.py` eredita dinamicamente da `dialogs.py` per evitare duplicazione codice
+  - Possibilità di cambiare interfaccia modificando l'import in `main.py`
+
+### 📝 Documentazione
+- Aggiornato README.md con spiegazione della doppia interfaccia
+- Aggiornato CHANGELOG.md con tutte le modifiche alla gestione date
+
+### 📝 Note
+- Tutti i fix sono retrocompatibili con versioni precedenti
+- Nessuna modifica alla struttura del database
+- Comportamento corretto ora:
+  - 💾 **Salva nuovo progetto**: `created_date = modified_date = now`
+  - ⟳ **Sovrascrivi progetto**: mantiene `created_date`, aggiorna `modified_date = now`
+  - 📊 **Aggiorna metadati**: mantiene sia `created_date` che `modified_date` invariate
+
+---
+
 ## [3.3.1] - 2025-12-02
 
 ### 🛠️ Corretto

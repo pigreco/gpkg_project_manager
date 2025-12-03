@@ -12,7 +12,7 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 
 **GeoPackage Project Manager** is a QGIS plugin that allows you to save, load, and manage QGIS projects directly within GeoPackage files. While QGIS natively supports saving projects in GeoPackage, it doesn't provide functionality to rename, duplicate, or delete them once saved. This plugin fills this gap and adds many other useful features, offering a modern and intuitive interface with full support for Qt5 and Qt6.
 
-![GUI](gui.png)
+![GUI](gui_table.png)
 
 ## Funzionalità Principali / Main Features
 
@@ -54,12 +54,17 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Fallback intelligente** / **Smart fallback**: Mostra informazioni base anche per progetti senza metadati completi / Shows basic information even for projects without complete metadata
 
 ### 🎨 Interfaccia Moderna / Modern Interface
+- **Doppia interfaccia disponibile** / **Dual interface available**:
+  - **Lista verticale** (`dialogs.py`): Design classico con lista progetti / Classic design with project list
+  - **Tabella a colonne** (`dialogs_table.py`): Vista moderna con metadati in colonne / Modern view with metadata in columns
 - Design moderno e pulito / Modern and clean design
 - Supporto completo Qt5/Qt6 / Full Qt5/Qt6 support
 - Menu contestuale con tasto destro / Right-click context menu
 - Rilevamento automatico dei GeoPackage nel progetto corrente / Automatic detection of GeoPackages in the current project
 - Feedback visivo e messaggi chiari / Visual feedback and clear messages
-- Selettore di lingua integrato / Integrated language selector
+- Ordinamento colonne cliccabile (interfaccia tabella) / Clickable column sorting (table interface)
+- Colonne ridimensionabili (interfaccia tabella) / Resizable columns (table interface)
+- Indicatore progetto corrente con ✅ / Current project indicator with ✅
 
 ## Installazione
 
@@ -226,6 +231,17 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - GitHub: [@pigreco](https://github.com/pigreco)
 
 ## Changelog
+
+### v3.3.2 (2025-12-03)
+- 🛠️ **Gestione date di modifica**: Corretta la logica di aggiornamento delle date di modifica
+  - ✅ Data modifica aggiornata SOLO quando si sovrascrive realmente un progetto
+  - ✅ "Aggiorna Metadati" non tocca più le date di modifica (aggiorna solo dimensione/layer)
+  - ✅ Parametro `update_modified_date` per controllare quando aggiornare la data
+  - ✅ Parametro `force_overwrite` per gestire correttamente la sovrascrittura
+- 🎨 **Doppia interfaccia**: Mantenute entrambe le versioni (lista e tabella)
+  - `dialogs.py`: interfaccia lista verticale (originale)
+  - `dialogs_table.py`: interfaccia tabella colonne (in uso)
+  - Ereditarietà dinamica per evitare duplicazione codice
 
 ### v3.3.1 (2025-12-02)
 - 🛠️ **Bug fix critici**: Corretti 6 bug importanti nel plugin

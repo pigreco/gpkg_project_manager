@@ -237,7 +237,8 @@ class GeoPackageProjectManagerPlugin:
     def run(self):
         """Run method that performs all the real work."""
         # Import dialog here to avoid loading it on QGIS startup
-        from .dialogs import GeoPackageProjectManagerDialog
+        # from .dialogs import GeoPackageProjectManagerDialog  # Versione lista (originale)
+        from .dialogs_table import GeoPackageProjectManagerDialog  # Versione tabella (nuova)
 
         # Create the dialog if it doesn't exist
         if self.dialog is None:

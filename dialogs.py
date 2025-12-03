@@ -1009,8 +1009,17 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         return metadata
 
-    def salva_metadati_progetto(self, conn, project_name, content, is_new=True):
-        """Salva o aggiorna i metadati del progetto."""
+    def salva_metadati_progetto(self, conn, project_name, content, is_new=True, update_modified_date=True):
+        """Salva o aggiorna i metadati del progetto.
+        
+        Args:
+            conn: Connessione SQLite
+            project_name: Nome del progetto
+            content: Contenuto XML del progetto
+            is_new: True se è un nuovo progetto
+            update_modified_date: True per aggiornare la data di modifica (default), 
+                                  False per mantenerla invariata (utile per aggiornamento metadati)
+        """
         try:
             # Assicurati che la tabella esista
             self.crea_tabella_metadata(conn)
@@ -1030,18 +1039,33 @@ class GeoPackageProjectManagerDialog(QDialog):
                 """, (project_name, now, now, metadata['size_bytes'], metadata['layer_count'],
                       metadata['vector_count'], metadata['raster_count']))
             else:
-                # Aggiornamento: mantieni created_date, aggiorna solo modified_date
-                cursor.execute("""
-                    INSERT OR REPLACE INTO qgis_projects_metadata
-                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
-                    VALUES (
-                        ?,
-                        COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
-                        ?,
-                        ?, ?, ?, ?
-                    )
-                """, (project_name, project_name, now, now, metadata['size_bytes'],
-                      metadata['layer_count'], metadata['vector_count'], metadata['raster_count']))
+                # Aggiornamento: mantieni created_date, aggiorna modified_date solo se richiesto
+                if update_modified_date:
+                    # Progetto modificato realmente: aggiorna modified_date
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO qgis_projects_metadata
+                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
+                        VALUES (
+                            ?,
+                            COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
+                            ?,
+                            ?, ?, ?, ?
+                        )
+                    """, (project_name, project_name, now, now, metadata['size_bytes'],
+                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count']))
+                else:
+                    # Solo aggiornamento metadati: mantieni modified_date esistente
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO qgis_projects_metadata
+                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
+                        VALUES (
+                            ?,
+                            COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
+                            COALESCE((SELECT modified_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
+                            ?, ?, ?, ?
+                        )
+                    """, (project_name, project_name, now, project_name, now, metadata['size_bytes'],
+                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count']))
 
             conn.commit()
         except Exception as e:
@@ -1266,7 +1290,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
     def open_help(self):
         """Open online guide in default browser."""
-        url = QUrl("https://github.com/pigreco/gpkg_project_manager/blob/main/README.md")
+        url = QUrl("https://github.com/pigreco/gpkg_project_manager/wiki")
         QDesktopServices.openUrl(url)
 
     def on_timestamp_changed(self, state):
@@ -1284,8 +1308,13 @@ class GeoPackageProjectManagerDialog(QDialog):
         settings = QSettings()
         settings.setValue('gpkg_project_manager/clone_add_version', self.chk_clone_add_version.isChecked())
 
-    def salva_progetto(self):
-        """Salva il progetto corrente nel GeoPackage."""
+    def salva_progetto(self, force_overwrite=False):
+        """Salva il progetto corrente nel GeoPackage.
+        
+        Args:
+            force_overwrite: Se True, forza la sovrascrittura senza chiedere conferma
+                           e imposta is_new=False per aggiornare la data di modifica
+        """
         if not self.gpkg_path:
             self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
             return
@@ -1336,7 +1365,11 @@ class GeoPackageProjectManagerDialog(QDialog):
         progetti_esistenti = self.get_lista_nomi_progetti()
         is_new = nome_progetto not in progetti_esistenti
 
-        if not is_new:
+        # Se force_overwrite è True, tratta sempre come esistente (is_new=False)
+        if force_overwrite:
+            is_new = False
+        elif not is_new:
+            # Progetto esiste e non è force_overwrite: chiedi conferma
             if not self.mostra_conferma(
                 self.tr("Progetto Esistente"),
                 self.tr("Il progetto '%1' esiste già.\nVuoi sovrascriverlo?").replace('%1', nome_progetto)
@@ -1418,7 +1451,8 @@ class GeoPackageProjectManagerDialog(QDialog):
             self.tr("Sovrascrivere il progetto '%1'?").replace('%1', nome_progetto)
         ):
             self.txt_nome_progetto.setText(nome_progetto)
-            self.salva_progetto()
+            # Passa force_overwrite=True per forzare is_new=False e aggiornare modified_date
+            self.salva_progetto(force_overwrite=True)
 
     def elimina_progetto(self):
         """Elimina il progetto selezionato."""
@@ -2105,8 +2139,9 @@ class GeoPackageProjectManagerDialog(QDialog):
                     continue
 
                 try:
-                    # Salva i metadati (is_new=False per preservare la data di creazione se esiste)
-                    self.salva_metadati_progetto(conn, nome_progetto, content, is_new=False)
+                    # Salva i metadati (is_new=False per preservare la data di creazione,
+                    # update_modified_date=False per NON cambiare la data di modifica)
+                    self.salva_metadati_progetto(conn, nome_progetto, content, is_new=False, update_modified_date=False)
                     progetti_aggiornati += 1
                 except Exception as e:
                     progetti_saltati += 1
