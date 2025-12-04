@@ -53,6 +53,14 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Info dettagliate** / **Detailed info**: Data creazione/modifica, dimensione progetto, conteggio layer (vettoriali/raster) / Creation/modification date, project size, layer count (vector/raster)
 - **Fallback intelligente** / **Smart fallback**: Mostra informazioni base anche per progetti senza metadati completi / Shows basic information even for projects without complete metadata
 
+### 🎨 Gestione Stili / Styles Management
+- **Visualizzazione stili** / **View styles**: Visualizza tutti gli stili salvati nella tabella `layer_styles` del GeoPackage / View all styles saved in the GeoPackage `layer_styles` table
+- **Applica stili** / **Apply styles**: Applica gli stili ai layer caricati nel progetto corrente / Apply styles to layers loaded in the current project
+- **Esporta stili** / **Export styles**: Esporta stili come file QML per riutilizzo / Export styles as QML files for reuse
+- **Gestione completa** / **Complete management**: Rinomina, duplica, imposta come default ed elimina stili / Rename, duplicate, set as default and delete styles
+- **Interfaccia integrata** / **Integrated interface**: Accesso diretto dalla finestra principale con pulsante dedicato / Direct access from the main window with dedicated button
+- **Tabella ordinabile** / **Sortable table**: Visualizzazione tabellare con ordinamento per layer, nome, data modifica / Table view with sorting by layer, name, modification date
+
 ### 🎨 Interfaccia Moderna / Modern Interface
 - **Doppia interfaccia disponibile** / **Dual interface available**:
   - **Lista verticale** (`dialogs.py`): Design classico con lista progetti / Classic design with project list
@@ -124,6 +132,20 @@ Quando devi creare una copia del GeoPackage:
 1. Clicca **🔀 Clona GeoPackage**
 2. Scegli il percorso di destinazione
 3. Il plugin copia il GeoPackage e aggiorna automaticamente tutti i percorsi nei progetti salvati
+
+#### 7. Gestisci gli Stili
+Per visualizzare e gestire gli stili salvati nel GeoPackage:
+1. Clicca **🎨 Stili** nella finestra principale
+2. La tabella mostra tutti gli stili presenti nella tabella `layer_styles`
+3. Puoi:
+   - **Doppio clic su uno stile**: Applica lo stile al layer corrispondente (se caricato nel progetto)
+   - **Menu contestuale ⚙️**: Accedi a tutte le opzioni di gestione
+   - **🎨 Applica**: Applica lo stile al layer nel progetto corrente
+   - **💾 Esporta QML**: Esporta lo stile come file QML
+   - **✏️ Rinomina**: Cambia il nome dello stile
+   - **📋 Duplica**: Crea una copia dello stile
+   - **⭐ Imposta come default**: Imposta lo stile come predefinito per il layer
+   - **🗑️ Elimina**: Rimuovi definitivamente lo stile
 
 ## Casi d'Uso
 
@@ -231,6 +253,15 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - GitHub: [@pigreco](https://github.com/pigreco)
 
 ## Changelog
+
+### v3.4.0 (2025-12-04)
+- 🎨 **Gestione Stili Layer**: Nuova funzionalità per visualizzare e gestire gli stili salvati nel GeoPackage
+  - ✅ Visualizzazione completa degli stili dalla tabella `layer_styles` (standard OGC)
+  - ✅ Applica, esporta, rinomina, duplica, imposta come default ed elimina stili
+  - ✅ Menu contestuale ⚙️ e doppio clic per operazioni rapide
+  - ✅ Compatibilità completa Qt5/Qt6
+  - ✅ File: `dialog_styles.py` (nuovo)
+- 🌍 **Traduzioni**: Aggiornate traduzioni inglesi con 56 nuove stringhe
 
 ### v3.3.2 (2025-12-03)
 - 🛠️ **Gestione date di modifica**: Corretta la logica di aggiornamento delle date di modifica

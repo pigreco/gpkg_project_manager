@@ -7,6 +7,37 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.4.0] - 2025-12-04
+
+### 🎉 Aggiunto
+- **Gestione Stili Layer**: Nuova funzionalità per visualizzare e gestire gli stili salvati nel GeoPackage
+  - Nuovo dialog **🎨 Stili** accessibile dalla finestra principale
+  - Visualizzazione completa degli stili dalla tabella `layer_styles` (standard OGC)
+  - Tabella ordinabile per layer, nome stile, default, descrizione e data modifica
+  - **Applica stili**: Applica gli stili ai layer caricati nel progetto corrente
+  - **Esporta stili**: Esporta stili come file QML per riutilizzo
+  - **Rinomina stili**: Modifica il nome degli stili esistenti
+  - **Duplica stili**: Crea copie di stili per modificarli senza alterare l'originale
+  - **Imposta come default**: Imposta uno stile come predefinito per un layer
+  - **Elimina stili**: Rimuovi stili non più necessari
+  - Menu contestuale ⚙️ per accesso rapido a tutte le funzioni
+  - Doppio clic per applicare rapidamente uno stile
+  - Compatibilità completa Qt5/Qt6
+  - File: `dialog_styles.py` (nuovo)
+  - Integrazione in `dialogs_table.py` con pulsante **🎨 Stili**
+
+### 🌍 Traduzioni
+- Aggiornate traduzioni inglesi per il nuovo dialogo stili
+- Aggiunte 56 nuove stringhe tradotte nel file `gpkg_project_manager_en.ts`
+- Traduzione del pulsante "🎨 Stili" e tooltip nella finestra principale
+
+### 📚 Documentazione
+- Aggiornato README.md con sezione "Gestione Stili"
+- Aggiunte istruzioni dettagliate per l'utilizzo del gestore stili
+- Aggiornato CHANGELOG.md
+
+---
+
 ## [3.3.2] - 2025-12-03
 
 ### 🛠️ Corretto

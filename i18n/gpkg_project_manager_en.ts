@@ -576,5 +576,264 @@ Tooltips will now show complete information.</translation>
         <translation>Error during metadata update:
 {}</translation>
     </message>
+    <message>
+        <source>🎨 Stili</source>
+        <translation>🎨 Styles</translation>
+    </message>
+    <message>
+        <source>Visualizza e gestisci gli stili salvati nel GeoPackage</source>
+        <translation>View and manage styles saved in GeoPackage</translation>
+    </message>
+</context>
+<context>
+    <name>StylesManagerDialog</name>
+    <message>
+        <source>🎨 Gestione Stili GeoPackage</source>
+        <translation>🎨 GeoPackage Styles Management</translation>
+    </message>
+    <message>
+        <source>🎨 Gestione Stili Layer</source>
+        <translation>🎨 Layer Styles Management</translation>
+    </message>
+    <message>
+        <source>Visualizza e gestisci gli stili salvati nel GeoPackage</source>
+        <translation>View and manage styles saved in GeoPackage</translation>
+    </message>
+    <message>
+        <source>📦 GeoPackage: {}</source>
+        <translation>📦 GeoPackage: {}</translation>
+    </message>
+    <message>
+        <source>  📋  Stili disponibili  (Doppio clic per applicare • Icona ⚙️ per opzioni)</source>
+        <translation>  📋  Available Styles  (Double click to apply • ⚙️ icon for options)</translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation>Layer</translation>
+    </message>
+    <message>
+        <source>Nome Stile</source>
+        <translation>Style Name</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Default</translation>
+    </message>
+    <message>
+        <source>Descrizione</source>
+        <translation>Description</translation>
+    </message>
+    <message>
+        <source>Ultima Modifica</source>
+        <translation>Last Modified</translation>
+    </message>
+    <message>
+        <source>⚙️</source>
+        <translation>⚙️</translation>
+    </message>
+    <message>
+        <source>Stili trovati: 0</source>
+        <translation>Styles found: 0</translation>
+    </message>
+    <message>
+        <source>⟳ Aggiorna</source>
+        <translation>⟳ Refresh</translation>
+    </message>
+    <message>
+        <source>Chiudi</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <source>Errore</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>Il file GeoPackage non esiste.</source>
+        <translation>The GeoPackage file does not exist.</translation>
+    </message>
+    <message>
+        <source>ℹ️ Nessuna tabella 'layer_styles' trovata nel GeoPackage</source>
+        <translation>ℹ️ No 'layer_styles' table found in GeoPackage</translation>
+    </message>
+    <message>
+        <source>ℹ️ Nessuno stile trovato nel GeoPackage</source>
+        <translation>ℹ️ No styles found in GeoPackage</translation>
+    </message>
+    <message>
+        <source>Stili trovati: {}</source>
+        <translation>Styles found: {}</translation>
+    </message>
+    <message>
+        <source>Errore nella lettura degli stili:
+{}</source>
+        <translation>Error reading styles:
+{}</translation>
+    </message>
+    <message>
+        <source>🎨  Applica</source>
+        <translation>🎨  Apply</translation>
+    </message>
+    <message>
+        <source>💾  Esporta QML</source>
+        <translation>💾  Export QML</translation>
+    </message>
+    <message>
+        <source>✏️  Rinomina</source>
+        <translation>✏️  Rename</translation>
+    </message>
+    <message>
+        <source>📋  Duplica</source>
+        <translation>📋  Duplicate</translation>
+    </message>
+    <message>
+        <source>⭐  Imposta come default</source>
+        <translation>⭐  Set as default</translation>
+    </message>
+    <message>
+        <source>🗑️  Elimina</source>
+        <translation>🗑️  Delete</translation>
+    </message>
+    <message>
+        <source>Errore nella lettura dello stile:
+{}</source>
+        <translation>Error reading style:
+{}</translation>
+    </message>
+    <message>
+        <source>Layer non trovato</source>
+        <translation>Layer not found</translation>
+    </message>
+    <message>
+        <source>Il layer '{}' non è caricato nel progetto corrente.
+
+Carica prima il layer per poter applicare lo stile.</source>
+        <translation>The layer '{}' is not loaded in the current project.
+
+Load the layer first to apply the style.</translation>
+    </message>
+    <message>
+        <source>✅ Stile applicato</source>
+        <translation>✅ Style applied</translation>
+    </message>
+    <message>
+        <source>Stile '{}' applicato al layer '{}'</source>
+        <translation>Style '{}' applied to layer '{}'</translation>
+    </message>
+    <message>
+        <source>Impossibile applicare lo stile:
+{}</source>
+        <translation>Unable to apply style:
+{}</translation>
+    </message>
+    <message>
+        <source>Esporta Stile come QML</source>
+        <translation>Export Style as QML</translation>
+    </message>
+    <message>
+        <source>File QML (*.qml)</source>
+        <translation>QML File (*.qml)</translation>
+    </message>
+    <message>
+        <source>✅ Stile esportato</source>
+        <translation>✅ Style exported</translation>
+    </message>
+    <message>
+        <source>Stile salvato in: {}</source>
+        <translation>Style saved to: {}</translation>
+    </message>
+    <message>
+        <source>Errore nell'esportazione dello stile:
+{}</source>
+        <translation>Error exporting style:
+{}</translation>
+    </message>
+    <message>
+        <source>✏️ Rinomina Stile</source>
+        <translation>✏️ Rename Style</translation>
+    </message>
+    <message>
+        <source>Nuovo nome per lo stile:</source>
+        <translation>New style name:</translation>
+    </message>
+    <message>
+        <source>✅ Stile rinominato</source>
+        <translation>✅ Style renamed</translation>
+    </message>
+    <message>
+        <source>Stile rinominato da '{}' a '{}'</source>
+        <translation>Style renamed from '{}' to '{}'</translation>
+    </message>
+    <message>
+        <source>Errore nella rinominazione dello stile:
+{}</source>
+        <translation>Error renaming style:
+{}</translation>
+    </message>
+    <message>
+        <source>📋 Duplica Stile</source>
+        <translation>📋 Duplicate Style</translation>
+    </message>
+    <message>
+        <source>Nome per lo stile duplicato:</source>
+        <translation>Name for duplicated style:</translation>
+    </message>
+    <message>
+        <source>✅ Stile duplicato</source>
+        <translation>✅ Style duplicated</translation>
+    </message>
+    <message>
+        <source>Stile '{}' duplicato come '{}'</source>
+        <translation>Style '{}' duplicated as '{}'</translation>
+    </message>
+    <message>
+        <source>Errore nella duplicazione dello stile:
+{}</source>
+        <translation>Error duplicating style:
+{}</translation>
+    </message>
+    <message>
+        <source>✅ Stile default aggiornato</source>
+        <translation>✅ Default style updated</translation>
+    </message>
+    <message>
+        <source>Stile '{}' impostato come default per il layer '{}'</source>
+        <translation>Style '{}' set as default for layer '{}'</translation>
+    </message>
+    <message>
+        <source>Errore nell'impostazione dello stile default:
+{}</source>
+        <translation>Error setting default style:
+{}</translation>
+    </message>
+    <message>
+        <source>🗑️ Elimina Stile</source>
+        <translation>🗑️ Delete Style</translation>
+    </message>
+    <message>
+        <source>Sei sicuro di voler eliminare lo stile '{}'?
+
+Layer: {}
+
+⚠️ Questa operazione non può essere annullata.</source>
+        <translation>Are you sure you want to delete the style '{}'?
+
+Layer: {}
+
+⚠️ This action cannot be undone.</translation>
+    </message>
+    <message>
+        <source>✅ Stile eliminato</source>
+        <translation>✅ Style deleted</translation>
+    </message>
+    <message>
+        <source>Stile '{}' eliminato con successo</source>
+        <translation>Style '{}' deleted successfully</translation>
+    </message>
+    <message>
+        <source>Errore nell'eliminazione dello stile:
+{}</source>
+        <translation>Error deleting style:
+{}</translation>
+    </message>
 </context>
 </TS>

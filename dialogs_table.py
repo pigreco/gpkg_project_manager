@@ -648,6 +648,15 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         self.btn_aggiorna_metadati.clicked.connect(self.aggiorna_tutti_metadati)
         clone_layout.addWidget(self.btn_aggiorna_metadati)
 
+        clone_layout.addSpacing(10)
+
+        # Pulsante Gestione Stili
+        self.btn_gestione_stili = QPushButton(self.tr("🎨 Stili"))
+        self.btn_gestione_stili.setObjectName("secondaryButton")
+        self.btn_gestione_stili.setToolTip(self.tr("Visualizza e gestisci gli stili salvati nel GeoPackage"))
+        self.btn_gestione_stili.clicked.connect(self.apri_gestione_stili)
+        clone_layout.addWidget(self.btn_gestione_stili)
+
         # Checkbox per aggiungere versione al clone
         self.chk_clone_add_version = QCheckBox(self.tr("Versioning (v01, v02, ...)"))
         self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
@@ -1184,6 +1193,23 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         except Exception as e:
             import traceback
             self.mostra_errore(self.tr("Errore"), self.tr("Errore durante l'ottimizzazione:\n{}").format(str(e) + "\n\n" + traceback.format_exc()))
+
+    def apri_gestione_stili(self):
+        """Apre il dialogo per la gestione degli stili."""
+        if not self.gpkg_path:
+            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
+            return
+
+        if not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Errore"), self.tr("Il file GeoPackage non esiste."))
+            return
+
+        # Importa il dialogo stili
+        from .dialog_styles import StylesManagerDialog
+
+        # Apri il dialogo
+        dialog = StylesManagerDialog(self.gpkg_path, self)
+        dialog.exec()
 
     def clear_gui(self):
         """Pulisce la GUI all'avvio del plugin."""
