@@ -720,13 +720,14 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         # TABELLA invece di LISTA
         self.tabella_progetti = QTableWidget()
-        self.tabella_progetti.setColumnCount(6)  # 5 colonne dati + 1 colonna opzioni
+        self.tabella_progetti.setColumnCount(7)  # 6 colonne dati + 1 colonna opzioni
         self.tabella_progetti.setHorizontalHeaderLabels([
             self.tr("Nome Progetto"),
             self.tr("Data Creazione"),
             self.tr("Data Modifica"),
             self.tr("Dimensione"),
             self.tr("Layer"),
+            self.tr("EPSG"),
             self.tr("⚙️")  # Colonna opzioni
         ])
         
@@ -747,12 +748,12 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         # Imposta il ridimensionamento delle colonne
         header = self.tabella_progetti.horizontalHeader()
         header.setSectionResizeMode(0, Stretch)  # Nome Progetto - si espande automaticamente
-        # Colonne 1-4 ridimensionabili manualmente dall'utente
-        for i in range(1, 5):
+        # Colonne 1-5 ridimensionabili manualmente dall'utente
+        for i in range(1, 6):
             header.setSectionResizeMode(i, Interactive)
-        # Colonna 5 (opzioni) ha larghezza fissa non ridimensionabile
-        self.tabella_progetti.setColumnWidth(5, 40)  # Larghezza fissa 40px
-        header.setSectionResizeMode(5, Fixed)
+        # Colonna 6 (opzioni) ha larghezza fissa non ridimensionabile
+        self.tabella_progetti.setColumnWidth(6, 40)  # Larghezza fissa 40px
+        header.setSectionResizeMode(6, Fixed)
         
         # Eventi
         self.tabella_progetti.cellDoubleClicked.connect(self.carica_progetto_da_tabella)
@@ -819,7 +820,11 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
                         m.created_date,
                         m.modified_date,
                         m.size_bytes,
-                        m.layer_count
+                        m.layer_count,
+                        m.vector_count,
+                        m.raster_count,
+                        m.table_count,
+                        m.crs_epsg
                     FROM qgis_projects p
                     LEFT JOIN qgis_projects_metadata m ON p.name = m.project_name
                     ORDER BY p.name
@@ -840,9 +845,9 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         """Aggiunge una riga alla tabella progetti.
         
         Args:
-            dati: tuple (nome, data_creazione, data_modifica, size_bytes, layer_count)
+            dati: tuple (nome, data_creazione, data_modifica, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
         """
-        nome, created_date, modified_date, size_bytes, layer_count = dati
+        nome, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg = dati
         
         row_position = self.tabella_progetti.rowCount()
         self.tabella_progetti.insertRow(row_position)
@@ -921,13 +926,33 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         item_size.setTextAlignment(AlignCenter | AlignVCenter)
         self.tabella_progetti.setItem(row_position, 3, item_size)
         
-        # Colonna 4: Layer
-        layer_str = str(layer_count) if layer_count else "N/A"
+        # Colonna 4: Layer (dettaglio: vettoriali, raster, tabelle)
+        if layer_count:
+            v = vector_count if vector_count else 0
+            r = raster_count if raster_count else 0
+            t = table_count if table_count else 0
+            # Formato: "V:3 R:2 T:1" o solo numeri non zero
+            parts = []
+            if v > 0:
+                parts.append(f"V:{v}")
+            if r > 0:
+                parts.append(f"R:{r}")
+            if t > 0:
+                parts.append(f"T:{t}")
+            layer_str = " ".join(parts) if parts else str(layer_count)
+        else:
+            layer_str = "N/A"
         item_layers = QTableWidgetItem(layer_str)
         item_layers.setTextAlignment(AlignCenter | AlignVCenter)
         self.tabella_progetti.setItem(row_position, 4, item_layers)
         
-        # Colonna 5: Pulsante Opzioni
+        # Colonna 5: EPSG
+        epsg_str = crs_epsg if crs_epsg else "N/A"
+        item_epsg = QTableWidgetItem(epsg_str)
+        item_epsg.setTextAlignment(AlignCenter | AlignVCenter)
+        self.tabella_progetti.setItem(row_position, 5, item_epsg)
+        
+        # Colonna 6: Pulsante Opzioni
         btn_opzioni = QToolButton()
         btn_opzioni.setText("⋮")
         btn_opzioni.setPopupMode(InstantPopup)
@@ -953,7 +978,7 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         
         btn_opzioni.setMenu(menu_opzioni)
         
-        self.tabella_progetti.setCellWidget(row_position, 5, btn_opzioni)
+        self.tabella_progetti.setCellWidget(row_position, 6, btn_opzioni)
 
     def aggiorna_info_gpkg(self):
         """Aggiorna le informazioni del GeoPackage (dimensione e numero progetti)."""

@@ -7,6 +7,30 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.4.1] - 2025-12-04
+
+### 🎉 Aggiunto
+- **Colonna EPSG**: Nuova colonna nella tabella progetti che mostra il sistema di riferimento (CRS) del progetto
+  - Estrazione CRS tramite API QGIS (`QgsProject.instance().crs().authid()`) al momento del salvataggio
+  - Metodo 100% affidabile che legge il CRS reale del progetto attivo
+  - Fallback su 4 pattern XML per progetti già salvati (projectCrs, destinationsrs, authid, proj4)
+  - Visualizzazione formato "EPSG:XXXX" nella tabella
+  - Campo `crs_epsg` aggiunto alla tabella `qgis_projects_metadata`
+  - Supporto retrocompatibilità: colonna aggiunta automaticamente se non esiste
+- **Dettaglio conteggio layer**: La colonna "Layer" ora mostra il dettaglio dei layer
+  - Formato: "V:3 R:2 T:1" (Vettoriali, Raster, Tabelle)
+  - Conteggio tabelle esclude tabelle di sistema (qgis_, sqlite_, gpkg_, rtree_)
+  - Distinzione tra layer vettoriali con geometria e tabelle senza geometria
+  - Campo `table_count` aggiunto alla tabella `qgis_projects_metadata`
+  - Visualizza solo i tipi presenti (es. solo "V:5" se ci sono solo vettoriali)
+
+### 🛠️ Corretto
+- **Estrazione EPSG affidabile**: Corretto il rilevamento del CRS che prima mostrava sempre "N/A"
+  - Ora usa API QGIS invece di parsing XML per massima affidabilità
+  - Funziona con qualsiasi sistema di riferimento supportato da QGIS
+
+---
+
 ## [3.4.0] - 2025-12-04
 
 ### 🎉 Aggiunto

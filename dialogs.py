@@ -947,9 +947,22 @@ class GeoPackageProjectManagerDialog(QDialog):
                     size_bytes INTEGER,
                     layer_count INTEGER,
                     vector_count INTEGER,
-                    raster_count INTEGER
+                    raster_count INTEGER,
+                    table_count INTEGER,
+                    crs_epsg TEXT
                 )
             """)
+            
+            # Aggiunge colonne se non esistono (per retrocompatibilità)
+            try:
+                cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN crs_epsg TEXT")
+            except:
+                pass  # Colonna già esistente
+            
+            try:
+                cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN table_count INTEGER")
+            except:
+                pass  # Colonna già esistente
             
             # Registra la tabella in gpkg_contents se non esiste già
             cursor.execute("""
@@ -975,7 +988,9 @@ class GeoPackageProjectManagerDialog(QDialog):
             'layer_count': 0,
             'vector_count': 0,
             'raster_count': 0,
-            'size_bytes': len(content) if content else 0
+            'table_count': 0,
+            'size_bytes': len(content) if content else 0,
+            'crs_epsg': None
         }
 
         try:
@@ -995,13 +1010,60 @@ class GeoPackageProjectManagerDialog(QDialog):
             if qgs_content:
                 # Conta i layer usando regex semplice (più veloce di XML parsing completo)
                 import re
-                # Cerca tag <maplayer con attributo type
-                vector_pattern = r'<maplayer[^>]*type="vector"'
+                
+                # Conta layer vettoriali (con geometria)
+                # Pattern per trovare layer vettoriali con geometria (Point, Line, Polygon, etc.)
+                vector_with_geom = r'<maplayer[^>]*type="vector"[^>]*geometry="(?!No Geometry)([^"]+)"'
+                metadata['vector_count'] = len(re.findall(vector_with_geom, qgs_content, re.DOTALL))
+                
+                # Conta layer raster
                 raster_pattern = r'<maplayer[^>]*type="raster"'
-
-                metadata['vector_count'] = len(re.findall(vector_pattern, qgs_content))
                 metadata['raster_count'] = len(re.findall(raster_pattern, qgs_content))
-                metadata['layer_count'] = metadata['vector_count'] + metadata['raster_count']
+                
+                # Conta tabelle (layer vettoriali senza geometria, escluse tabelle di sistema)
+                # Le tabelle hanno geometry="No Geometry" o nessun attributo geometry
+                table_pattern = r'<maplayer[^>]*type="vector"[^>]*geometry="No Geometry"'
+                all_tables = re.findall(table_pattern, qgs_content, re.DOTALL)
+                
+                # Filtra tabelle di sistema (qgis_, sqlite_, gpkg_)
+                # Cerca il nome della tabella per ogni match
+                table_count = 0
+                for match in re.finditer(table_pattern, qgs_content, re.DOTALL):
+                    # Trova il datasource dopo questo match
+                    start_pos = match.start()
+                    datasource_match = re.search(r'<datasource>([^<]+)</datasource>', qgs_content[start_pos:start_pos+2000])
+                    if datasource_match:
+                        datasource = datasource_match.group(1)
+                        # Controlla se NON è una tabella di sistema
+                        if not any(sys_prefix in datasource.lower() for sys_prefix in ['qgis_', 'sqlite_', 'gpkg_', 'rtree_']):
+                            table_count += 1
+                    else:
+                        # Se non troviamo datasource, contiamo comunque
+                        table_count += 1
+                
+                metadata['table_count'] = table_count
+                metadata['layer_count'] = metadata['vector_count'] + metadata['raster_count'] + metadata['table_count']
+                
+                # Estrai EPSG dal progetto - Prova diversi pattern
+                # Pattern 1: <projectCrs><spatialrefsys>...<authid>EPSG:XXXX</authid>
+                epsg_match = re.search(r'<projectCrs>.*?<authid>(EPSG:\d+)</authid>', qgs_content, re.DOTALL)
+                if epsg_match:
+                    metadata['crs_epsg'] = epsg_match.group(1)
+                else:
+                    # Pattern 2: <destinationsrs><spatialrefsys>...<authid>EPSG:XXXX</authid>
+                    epsg_match = re.search(r'<destinationsrs>.*?<authid>(EPSG:\d+)</authid>', qgs_content, re.DOTALL)
+                    if epsg_match:
+                        metadata['crs_epsg'] = epsg_match.group(1)
+                    else:
+                        # Pattern 3: Qualsiasi <authid>EPSG:XXXX</authid> (prima occorrenza)
+                        epsg_match = re.search(r'<authid>(EPSG:\d+)</authid>', qgs_content)
+                        if epsg_match:
+                            metadata['crs_epsg'] = epsg_match.group(1)
+                        else:
+                            # Pattern 4: <proj4>...+init=epsg:XXXX...
+                            epsg_match = re.search(r'\+init=epsg:(\d+)', qgs_content, re.IGNORECASE)
+                            if epsg_match:
+                                metadata['crs_epsg'] = f"EPSG:{epsg_match.group(1)}"
 
         except Exception as e:
             # Se parsing fallisce, ritorna metadati base
@@ -1009,7 +1071,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         return metadata
 
-    def salva_metadati_progetto(self, conn, project_name, content, is_new=True, update_modified_date=True):
+    def salva_metadati_progetto(self, conn, project_name, content, is_new=True, update_modified_date=True, project_crs=None):
         """Salva o aggiorna i metadati del progetto.
         
         Args:
@@ -1019,6 +1081,7 @@ class GeoPackageProjectManagerDialog(QDialog):
             is_new: True se è un nuovo progetto
             update_modified_date: True per aggiornare la data di modifica (default), 
                                   False per mantenerla invariata (utile per aggiornamento metadati)
+            project_crs: CRS del progetto (opzionale, se fornito ha priorità sull'estrazione dal XML)
         """
         try:
             # Assicurati che la tabella esista
@@ -1026,6 +1089,10 @@ class GeoPackageProjectManagerDialog(QDialog):
 
             # Estrai metadati dal progetto
             metadata = self.estrai_metadati_progetto(content)
+            
+            # Se è stato fornito il CRS, usa quello (ha priorità)
+            if project_crs:
+                metadata['crs_epsg'] = project_crs
 
             cursor = conn.cursor()
             now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -1034,38 +1101,38 @@ class GeoPackageProjectManagerDialog(QDialog):
                 # Nuovo progetto: created_date = modified_date
                 cursor.execute("""
                     INSERT OR REPLACE INTO qgis_projects_metadata
-                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (project_name, now, now, metadata['size_bytes'], metadata['layer_count'],
-                      metadata['vector_count'], metadata['raster_count']))
+                      metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg']))
             else:
                 # Aggiornamento: mantieni created_date, aggiorna modified_date solo se richiesto
                 if update_modified_date:
                     # Progetto modificato realmente: aggiorna modified_date
                     cursor.execute("""
                         INSERT OR REPLACE INTO qgis_projects_metadata
-                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
+                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
                         VALUES (
                             ?,
                             COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
                             ?,
-                            ?, ?, ?, ?
+                            ?, ?, ?, ?, ?, ?
                         )
                     """, (project_name, project_name, now, now, metadata['size_bytes'],
-                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count']))
+                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg']))
                 else:
                     # Solo aggiornamento metadati: mantieni modified_date esistente
                     cursor.execute("""
                         INSERT OR REPLACE INTO qgis_projects_metadata
-                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count)
+                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
                         VALUES (
                             ?,
                             COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
                             COALESCE((SELECT modified_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
-                            ?, ?, ?, ?
+                            ?, ?, ?, ?, ?, ?
                         )
                     """, (project_name, project_name, now, project_name, now, metadata['size_bytes'],
-                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count']))
+                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg']))
 
             conn.commit()
         except Exception as e:
@@ -1082,7 +1149,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT created_date, modified_date, size_bytes, layer_count, vector_count, raster_count
+                SELECT created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg
                 FROM qgis_projects_metadata
                 WHERE project_name = ?
             """, (project_name,))
@@ -1097,7 +1164,9 @@ class GeoPackageProjectManagerDialog(QDialog):
                     'size_bytes': result[2],
                     'layer_count': result[3],
                     'vector_count': result[4],
-                    'raster_count': result[5]
+                    'raster_count': result[5],
+                    'table_count': result[6] if len(result) > 6 else 0,
+                    'crs_epsg': result[7] if len(result) > 7 else None
                 }
         except Exception as e:
             pass
@@ -1378,6 +1447,18 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         try:
             project = QgsProject.instance()
+            
+            # Estrai il CRS del progetto PRIMA del salvataggio
+            project_crs = None
+            try:
+                crs = project.crs()
+                if crs.isValid():
+                    auth_id = crs.authid()
+                    if auth_id:
+                        project_crs = auth_id
+            except:
+                pass
+            
             uri = f"geopackage:{self.gpkg_path}?projectName={nome_progetto}"
 
             if project.write(uri):
@@ -1391,7 +1472,8 @@ class GeoPackageProjectManagerDialog(QDialog):
                     result = cursor.fetchone()
                     if result:
                         content = result[0]
-                        self.salva_metadati_progetto(conn, nome_progetto, content, is_new=is_new)
+                        # Passa il CRS estratto al metodo di salvataggio
+                        self.salva_metadati_progetto(conn, nome_progetto, content, is_new=is_new, project_crs=project_crs)
                     conn.close()
                 except Exception as e:
                     pass  # Errore non critico

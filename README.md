@@ -254,6 +254,17 @@ https://github.com/pigreco/gpkg_project_manager/issues
 
 ## Changelog
 
+### v3.4.1 (2025-12-04)
+- 🎯 **Colonna EPSG**: Mostra il sistema di riferimento (CRS) del progetto nella tabella
+  - ✅ Estrazione affidabile tramite API QGIS (100% accurato)
+  - ✅ Formato "EPSG:XXXX" visualizzato nella colonna dedicata
+  - ✅ Funziona con qualsiasi CRS supportato da QGIS
+- 📊 **Dettaglio conteggio layer**: Mostra V:3 R:2 T:1 (Vettoriali, Raster, Tabelle)
+  - ✅ Conteggio separato per tipo di layer
+  - ✅ Esclude tabelle di sistema (qgis_, sqlite_, gpkg_)
+  - ✅ Visualizza solo i tipi presenti
+- 🛠️ **Fix estrazione EPSG**: Risolto problema che mostrava sempre "N/A"
+
 ### v3.4.0 (2025-12-04)
 - 🎨 **Gestione Stili Layer**: Nuova funzionalità per visualizzare e gestire gli stili salvati nel GeoPackage
   - ✅ Visualizzazione completa degli stili dalla tabella `layer_styles` (standard OGC)
@@ -267,12 +278,7 @@ https://github.com/pigreco/gpkg_project_manager/issues
 - 🛠️ **Gestione date di modifica**: Corretta la logica di aggiornamento delle date di modifica
   - ✅ Data modifica aggiornata SOLO quando si sovrascrive realmente un progetto
   - ✅ "Aggiorna Metadati" non tocca più le date di modifica (aggiorna solo dimensione/layer)
-  - ✅ Parametro `update_modified_date` per controllare quando aggiornare la data
-  - ✅ Parametro `force_overwrite` per gestire correttamente la sovrascrittura
 - 🎨 **Doppia interfaccia**: Mantenute entrambe le versioni (lista e tabella)
-  - `dialogs.py`: interfaccia lista verticale (originale)
-  - `dialogs_table.py`: interfaccia tabella colonne (in uso)
-  - Ereditarietà dinamica per evitare duplicazione codice
 
 ### v3.3.1 (2025-12-02)
 - 🛠️ **Bug fix critici**: Corretti 6 bug importanti nel plugin
