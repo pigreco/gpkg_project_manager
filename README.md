@@ -57,16 +57,21 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 
 ### 🎨 Gestione Stili / Styles Management
 - **Visualizzazione stili** / **View styles**: Visualizza tutti gli stili salvati nella tabella `layer_styles` del GeoPackage / View all styles saved in the GeoPackage `layer_styles` table
-- **Applica stili** / **Apply styles**: Applica gli stili ai layer caricati nel progetto corrente / Apply styles to layers loaded in the current project
+- **Applica stili** / **Apply styles**: Applica gli stili ai layer caricati nel progetto corrente con doppio clic o menu / Apply styles to layers loaded in the current project with double-click or menu
 - **Esporta stili** / **Export styles**: Esporta stili come file QML per riutilizzo / Export styles as QML files for reuse
 - **Gestione completa** / **Complete management**: Rinomina, duplica, imposta come default ed elimina stili / Rename, duplicate, set as default and delete styles
-- **Interfaccia integrata** / **Integrated interface**: Accesso diretto dalla finestra principale con pulsante dedicato / Direct access from the main window with dedicated button
+- **Menu opzioni** / **Options menu**: Menu completo per ogni stile (Applica, Esporta, Rinomina, Duplica, Default, Elimina) / Complete menu for each style (Apply, Export, Rename, Duplicate, Default, Delete)
+- **Interfaccia integrata a Tab** / **Integrated tab interface**: Accesso diretto con tab dedicato "🎨 Stili" senza aprire finestre separate / Direct access with dedicated "🎨 Styles" tab without opening separate windows
 - **Tabella ordinabile** / **Sortable table**: Visualizzazione tabellare con ordinamento per layer, nome, data modifica / Table view with sorting by layer, name, modification date
+- **Applicazione automatica** / **Automatic application**: Aggiornamento immediato della mappa dopo applicazione stile / Immediate map update after style application
 
 ### 🎨 Interfaccia Moderna / Modern Interface
+- **Interfaccia a Tab** / **Tabbed interface**: Navigazione fluida tra Progetti e Stili con tab dedicati / Smooth navigation between Projects and Styles with dedicated tabs
+  - **Tab "📋 Progetti"**: Gestione completa progetti GeoPackage / Complete GeoPackage project management
+  - **Tab "🎨 Stili"**: Gestione stili integrata / Integrated styles management
 - **Doppia interfaccia disponibile** / **Dual interface available**:
   - **Lista verticale** (`dialogs.py`): Design classico con lista progetti / Classic design with project list
-  - **Tabella a colonne** (`dialogs_table.py`): Vista moderna con metadati in colonne / Modern view with metadata in columns
+  - **Tabella a colonne** (`dialogs_table.py`): Vista moderna con metadati in colonne e tab integrati / Modern view with metadata in columns and integrated tabs
 - Design moderno e pulito / Modern and clean design
 - Supporto completo Qt5/Qt6 / Full Qt5/Qt6 support
 - Menu contestuale con tasto destro / Right-click context menu

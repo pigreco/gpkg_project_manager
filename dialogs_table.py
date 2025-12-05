@@ -26,7 +26,7 @@ from qgis.PyQt.QtWidgets import (
     QPushButton, QComboBox, QTableWidget, QTableWidgetItem,
     QFileDialog, QMessageBox, QGroupBox, QFrame,
     QAbstractItemView, QSizePolicy, QInputDialog,
-    QToolButton, QWidget, QProgressDialog, QApplication, QMenu, QCheckBox,
+    QToolButton, QWidget, QProgressDialog, QApplication, QMenu, QCheckBox, QTabWidget,
     QHeaderView
 )
 from qgis.PyQt.QtCore import Qt, QSize, QTimer, QSettings, QCoreApplication, QUrl
@@ -660,15 +660,6 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         self.btn_aggiorna_metadati.clicked.connect(self.aggiorna_tutti_metadati)
         clone_layout.addWidget(self.btn_aggiorna_metadati)
 
-        clone_layout.addSpacing(10)
-
-        # Pulsante Gestione Stili
-        self.btn_gestione_stili = QPushButton(self.tr("🎨 Stili"))
-        self.btn_gestione_stili.setObjectName("secondaryButton")
-        self.btn_gestione_stili.setToolTip(self.tr("Visualizza e gestisci gli stili salvati nel GeoPackage"))
-        self.btn_gestione_stili.clicked.connect(self.apri_gestione_stili)
-        clone_layout.addWidget(self.btn_gestione_stili)
-
         clone_layout.addStretch()
         gpkg_layout.addLayout(clone_layout)
 
@@ -737,6 +728,16 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         layout.addWidget(save_group)
 
+        # === TABS PROGETTI/STILI ===
+        self.tab_widget = QTabWidget()
+        layout.addWidget(self.tab_widget)
+
+        # Tab 1: Progetti
+        tab_progetti = QWidget()
+        tab_progetti_layout = QVBoxLayout(tab_progetti)
+        tab_progetti_layout.setSpacing(10)
+        tab_progetti_layout.setContentsMargins(0, 10, 0, 0)
+
         # === SEZIONE PROGETTI - TABELLA ===
         progetti_group = QGroupBox(self.tr("  📋  Progetti nel GeoPackage  (Doppio clic per caricare • Icona ⚙️ per opzioni)"))
         progetti_layout = QVBoxLayout(progetti_group)
@@ -784,7 +785,14 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         
         progetti_layout.addWidget(self.tabella_progetti)
 
-        layout.addWidget(progetti_group)
+        tab_progetti_layout.addWidget(progetti_group)
+        tab_progetti_layout.addStretch()
+
+        # Aggiungi il tab progetti
+        self.tab_widget.addTab(tab_progetti, self.tr("📋 Progetti"))
+
+        # Tab 2: Stili
+        self.setup_styles_tab()
 
         # === FOOTER ===
         layout.addStretch()
@@ -796,7 +804,7 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.4.2 • Qt5/Qt6 Compatible • Table View"))
+        version_label = QLabel(self.tr("v3.5.0 • Qt5/Qt6 Compatible • Table View"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
@@ -817,6 +825,480 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         layout.addLayout(footer_layout)
 
         self.imposta_nome_progetto_default()
+
+    def setup_styles_tab(self):
+        """Configura il tab per la gestione degli stili."""
+        # Crea il widget per il tab stili
+        tab_stili = QWidget()
+        tab_stili_layout = QVBoxLayout(tab_stili)
+        tab_stili_layout.setSpacing(15)
+        tab_stili_layout.setContentsMargins(0, 10, 0, 0)
+
+        # Tabella stili
+        styles_group = QGroupBox(self.tr("  📋  Stili disponibili  (Doppio clic per applicare • Icona ⚙️ per opzioni)"))
+        styles_layout = QVBoxLayout(styles_group)
+
+        self.table_styles = QTableWidget()
+        self.table_styles.setColumnCount(6)
+        self.table_styles.setHorizontalHeaderLabels([
+            self.tr("Layer"),
+            self.tr("Nome Stile"),
+            self.tr("Default"),
+            self.tr("Descrizione"),
+            self.tr("Ultima Modifica"),
+            self.tr("⚙️")
+        ])
+
+        self.table_styles.setAlternatingRowColors(True)
+        self.table_styles.setSelectionMode(SingleSelection)
+        self.table_styles.setSelectionBehavior(SelectRows)
+        self.table_styles.setEditTriggers(NoEditTriggers)
+        self.table_styles.verticalHeader().setVisible(False)
+        self.table_styles.setSortingEnabled(True)
+
+        # Ridimensionamento colonne
+        header = self.table_styles.horizontalHeader()
+        header.setSectionResizeMode(0, Stretch)
+        for i in range(1, 5):
+            header.setSectionResizeMode(i, Interactive)
+        self.table_styles.setColumnWidth(5, 40)
+        header.setSectionResizeMode(5, Fixed)
+
+        # Eventi - sarà gestito da metodi che creeremo
+        self.table_styles.cellDoubleClicked.connect(self.apply_style_from_table)
+
+        styles_layout.addWidget(self.table_styles)
+        tab_stili_layout.addWidget(styles_group)
+
+        # Footer
+        footer_layout = QHBoxLayout()
+
+        self.styles_count_label = QLabel(self.tr("Stili trovati: 0"))
+        self.styles_count_label.setObjectName("tipLabel")
+        footer_layout.addWidget(self.styles_count_label)
+
+        footer_layout.addSpacing(20)
+
+        # Info GeoPackage per stili
+        self.styles_info_label = QLabel(self.tr("📦 --"))
+        self.styles_info_label.setObjectName("tipLabel")
+        footer_layout.addWidget(self.styles_info_label)
+
+        footer_layout.addStretch()
+
+        btn_refresh_styles = QPushButton(self.tr("⟳ Aggiorna"))
+        btn_refresh_styles.setFixedWidth(120)
+        btn_refresh_styles.clicked.connect(self.load_styles)
+        footer_layout.addWidget(btn_refresh_styles)
+
+        tab_stili_layout.addLayout(footer_layout)
+        tab_stili_layout.addStretch()
+
+        # Aggiungi il tab
+        self.tab_widget.addTab(tab_stili, self.tr("🎨 Stili"))
+
+        # Connetti il cambio di tab per ricaricare gli stili quando si apre il tab
+        self.tab_widget.currentChanged.connect(self.on_tab_changed)
+
+    def on_tab_changed(self, index):
+        """Gestisce il cambio di tab."""
+        if index == 1:  # Tab Stili
+            self.load_styles()
+            # Aggiorna info GeoPackage nel tab stili
+            if self.gpkg_path:
+                gpkg_name = os.path.basename(self.gpkg_path)
+                self.styles_info_label.setText(self.tr("📦 {}").format(gpkg_name))
+            else:
+                self.styles_info_label.setText(self.tr("📦 --"))
+
+    def load_styles(self):
+        """Carica gli stili dal GeoPackage corrente."""
+        self.table_styles.setRowCount(0)
+
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.styles_count_label.setText(self.tr("ℹ️ Seleziona un GeoPackage dal tab Progetti"))
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            # Verifica se esiste la tabella layer_styles
+            cursor.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='layer_styles'
+            """)
+
+            if not cursor.fetchone():
+                self.styles_count_label.setText(self.tr("ℹ️ Nessuna tabella 'layer_styles' trovata nel GeoPackage"))
+                conn.close()
+                return
+
+            # Carica gli stili
+            cursor.execute("""
+                SELECT
+                    f_table_name,
+                    styleName,
+                    useAsDefault,
+                    description,
+                    update_time,
+                    id
+                FROM layer_styles
+                ORDER BY f_table_name, styleName
+            """)
+
+            rows = cursor.fetchall()
+            conn.close()
+
+            if not rows:
+                self.styles_count_label.setText(self.tr("ℹ️ Nessuno stile trovato"))
+                return
+
+            # Popola la tabella
+            for row in rows:
+                self.add_style_row(row)
+
+            self.styles_count_label.setText(self.tr("Stili trovati: {}").format(len(rows)))
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nel caricamento degli stili:\n{}").format(str(e)))
+
+    def add_style_row(self, row_data):
+        """Aggiunge una riga alla tabella stili."""
+        layer_name, style_name, use_as_default, description, update_time, style_id = row_data
+
+        row_position = self.table_styles.rowCount()
+        self.table_styles.insertRow(row_position)
+
+        # Colonna 0: Layer
+        item_layer = QTableWidgetItem(f"  🗺️  {layer_name}")
+        item_layer.setData(UserRole, style_id)
+        self.table_styles.setItem(row_position, 0, item_layer)
+
+        # Colonna 1: Nome Stile
+        item_name = QTableWidgetItem(style_name)
+        self.table_styles.setItem(row_position, 1, item_name)
+
+        # Colonna 2: Default
+        default_text = "✓" if use_as_default else ""
+        item_default = QTableWidgetItem(default_text)
+        item_default.setTextAlignment(AlignCenter | AlignVCenter)
+        self.table_styles.setItem(row_position, 2, item_default)
+
+        # Colonna 3: Descrizione
+        item_desc = QTableWidgetItem(description if description else "")
+        self.table_styles.setItem(row_position, 3, item_desc)
+
+        # Colonna 4: Ultima Modifica
+        if update_time:
+            try:
+                dt = datetime.strptime(update_time, '%Y-%m-%dT%H:%M:%S')
+                data_formattata = dt.strftime('%d/%m/%Y %H:%M')
+            except:
+                data_formattata = update_time
+        else:
+            data_formattata = "N/A"
+        item_time = QTableWidgetItem(data_formattata)
+        item_time.setTextAlignment(AlignCenter | AlignVCenter)
+        self.table_styles.setItem(row_position, 4, item_time)
+
+        # Colonna 5: Pulsante Opzioni con menu
+        btn_options = QToolButton()
+        btn_options.setText("⋮")
+        btn_options.setPopupMode(InstantPopup)
+        btn_options.setStyleSheet("""
+            QToolButton {
+                font-size: 20px;
+                font-weight: bold;
+                padding: 2px 8px;
+            }
+        """)
+
+        # Menu opzioni
+        menu_options = QMenu()
+        menu_options.addAction(self.tr("🎨 Applica Stile"), lambda sid=style_id, ln=layer_name: self.applica_stile_da_menu(sid, ln))
+        menu_options.addAction(self.tr("📥 Esporta QML"), lambda sid=style_id, sn=style_name: self.esporta_stile_qml(sid, sn))
+        menu_options.addSeparator()
+        menu_options.addAction(self.tr("✏️ Rinomina"), lambda sid=style_id, sn=style_name: self.rinomina_stile(sid, sn))
+        menu_options.addAction(self.tr("📋 Duplica"), lambda sid=style_id, sn=style_name: self.duplica_stile(sid, sn))
+        menu_options.addSeparator()
+        menu_options.addAction(self.tr("⭐ Imposta come Default"), lambda sid=style_id, ln=layer_name: self.imposta_stile_default(sid, ln))
+        menu_options.addSeparator()
+        menu_options.addAction(self.tr("🗑️ Elimina"), lambda sid=style_id, sn=style_name: self.elimina_stile(sid, sn))
+
+        btn_options.setMenu(menu_options)
+        self.table_styles.setCellWidget(row_position, 5, btn_options)
+
+    def apply_style_from_table(self, row, column):
+        """Applica lo stile quando si fa doppio clic su una riga."""
+        style_id = self.table_styles.item(row, 0).data(UserRole)
+        layer_name = self.table_styles.item(row, 0).text().replace("  🗺️  ", "")
+        self.applica_stile_da_menu(style_id, layer_name)
+
+    def applica_stile_da_menu(self, style_id, layer_name):
+        """Applica lo stile selezionato al layer."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Errore"), self.tr("GeoPackage non valido."))
+            return
+
+        try:
+            # Recupera lo stile dal database
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT styleQML, styleName
+                FROM layer_styles
+                WHERE id = ?
+            """, (style_id,))
+
+            result = cursor.fetchone()
+            conn.close()
+
+            if not result or not result[0]:
+                self.mostra_errore(self.tr("Errore"), self.tr("Impossibile trovare lo stile nel database."))
+                return
+
+            style_qml = result[0]
+            style_name = result[1]
+
+            # Trova il layer nel progetto corrente
+            project = QgsProject.instance()
+            layers = project.mapLayersByName(layer_name)
+
+            if not layers:
+                self.mostra_errore(
+                    self.tr("Layer non trovato"),
+                    self.tr("Il layer '{}' non è presente nel progetto corrente.\n\nCarica prima il layer nel progetto.").format(layer_name)
+                )
+                return
+
+            layer = layers[0]  # Prendi il primo layer con questo nome
+
+            # Crea un file temporaneo per il QML
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.qml', delete=False, encoding='utf-8') as tmp_file:
+                tmp_file.write(style_qml)
+                tmp_qml_path = tmp_file.name
+
+            # Applica lo stile al layer
+            try:
+                message = layer.loadNamedStyle(tmp_qml_path)
+                layer.triggerRepaint()
+
+                # Rimuovi il file temporaneo
+                os.unlink(tmp_qml_path)
+
+                QMessageBox.information(
+                    self,
+                    self.tr("Successo"),
+                    self.tr("Stile '{}' applicato al layer '{}'.").format(style_name, layer_name)
+                )
+
+                # Aggiorna la vista della mappa
+                if iface:
+                    iface.mapCanvas().refresh()
+
+            except Exception as e:
+                # Rimuovi il file temporaneo in caso di errore
+                if os.path.exists(tmp_qml_path):
+                    os.unlink(tmp_qml_path)
+                raise e
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nell'applicazione dello stile:\n{}").format(str(e)))
+
+    def esporta_stile_qml(self, style_id, style_name):
+        """Esporta lo stile come file QML."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Esporta Stile QML"),
+            f"{style_name}.qml",
+            self.tr("File QML (*.qml)")
+        )
+
+        if not file_path:
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT styleQML
+                FROM layer_styles
+                WHERE id = ?
+            """, (style_id,))
+
+            result = cursor.fetchone()
+            conn.close()
+
+            if result and result[0]:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(result[0])
+
+                QMessageBox.information(
+                    self,
+                    self.tr("Successo"),
+                    self.tr("Stile esportato con successo in:\n{}").format(file_path)
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    self.tr("Errore"),
+                    self.tr("Impossibile trovare lo stile nel database.")
+                )
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nell'esportazione dello stile:\n{}").format(str(e)))
+
+    def rinomina_stile(self, style_id, old_name):
+        """Rinomina uno stile."""
+        new_name, ok = QInputDialog.getText(
+            self,
+            self.tr("Rinomina Stile"),
+            self.tr("Nuovo nome per lo stile:"),
+            text=old_name
+        )
+
+        if not ok or not new_name or new_name == old_name:
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                UPDATE layer_styles
+                SET styleName = ?
+                WHERE id = ?
+            """, (new_name, style_id))
+
+            conn.commit()
+            conn.close()
+
+            QMessageBox.information(
+                self,
+                self.tr("Successo"),
+                self.tr("Stile rinominato con successo.")
+            )
+
+            self.load_styles()
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nella rinomina dello stile:\n{}").format(str(e)))
+
+    def duplica_stile(self, style_id, style_name):
+        """Duplica uno stile."""
+        new_name, ok = QInputDialog.getText(
+            self,
+            self.tr("Duplica Stile"),
+            self.tr("Nome per la copia dello stile:"),
+            text=f"{style_name}_copia"
+        )
+
+        if not ok or not new_name:
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            # Copia lo stile
+            cursor.execute("""
+                INSERT INTO layer_styles (f_table_catalog, f_table_schema, f_table_name,
+                    f_geometry_column, styleName, styleQML, styleSLD, useAsDefault,
+                    description, owner, ui, update_time)
+                SELECT f_table_catalog, f_table_schema, f_table_name,
+                    f_geometry_column, ?, styleQML, styleSLD, 0,
+                    description, owner, ui, datetime('now')
+                FROM layer_styles
+                WHERE id = ?
+            """, (new_name, style_id))
+
+            conn.commit()
+            conn.close()
+
+            QMessageBox.information(
+                self,
+                self.tr("Successo"),
+                self.tr("Stile duplicato con successo.")
+            )
+
+            self.load_styles()
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nella duplicazione dello stile:\n{}").format(str(e)))
+
+    def imposta_stile_default(self, style_id, layer_name):
+        """Imposta uno stile come default per il layer."""
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            # Rimuovi default da tutti gli stili del layer
+            cursor.execute("""
+                UPDATE layer_styles
+                SET useAsDefault = 0
+                WHERE f_table_name = ?
+            """, (layer_name,))
+
+            # Imposta questo stile come default
+            cursor.execute("""
+                UPDATE layer_styles
+                SET useAsDefault = 1
+                WHERE id = ?
+            """, (style_id,))
+
+            conn.commit()
+            conn.close()
+
+            QMessageBox.information(
+                self,
+                self.tr("Successo"),
+                self.tr("Stile impostato come default per il layer.")
+            )
+
+            self.load_styles()
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nell'impostazione dello stile default:\n{}").format(str(e)))
+
+    def elimina_stile(self, style_id, style_name):
+        """Elimina uno stile."""
+        reply = QMessageBox.question(
+            self,
+            self.tr("Elimina Stile"),
+            self.tr("Sei sicuro di voler eliminare lo stile '{}'?\n\n⚠️ Questa operazione non può essere annullata.").format(style_name),
+            MsgBoxYes | MsgBoxNo,
+            MsgBoxNo
+        )
+
+        if reply != MsgBoxYes:
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                DELETE FROM layer_styles
+                WHERE id = ?
+            """, (style_id,))
+
+            conn.commit()
+            conn.close()
+
+            QMessageBox.information(
+                self,
+                self.tr("Successo"),
+                self.tr("Stile eliminato con successo.")
+            )
+
+            self.load_styles()
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nell'eliminazione dello stile:\n{}").format(str(e)))
 
     def aggiorna_lista_progetti(self):
         """Aggiorna la tabella dei progetti salvati nel GeoPackage."""
@@ -1287,23 +1769,6 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         except Exception as e:
             import traceback
             self.mostra_errore(self.tr("Errore"), self.tr("Errore durante l'ottimizzazione:\n{}").format(str(e) + "\n\n" + traceback.format_exc()))
-
-    def apri_gestione_stili(self):
-        """Apre il dialogo per la gestione degli stili."""
-        if not self.gpkg_path:
-            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
-            return
-
-        if not os.path.exists(self.gpkg_path):
-            self.mostra_errore(self.tr("Errore"), self.tr("Il file GeoPackage non esiste."))
-            return
-
-        # Importa il dialogo stili
-        from .dialog_styles import StylesManagerDialog
-
-        # Apri il dialogo
-        dialog = StylesManagerDialog(self.gpkg_path, self)
-        dialog.exec()
 
     def clear_gui(self):
         """Pulisce la GUI all'avvio del plugin."""

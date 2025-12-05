@@ -7,6 +7,41 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.5.0] - 2025-12-05
+
+### 🎉 Aggiunto
+- **Interfaccia a Tab**: Implementata navigazione a tab nell'interfaccia principale
+  - **Tab "📋 Progetti"**: Gestione completa dei progetti GeoPackage (tutte le funzionalità esistenti)
+  - **Tab "🎨 Stili"**: Gestione stili integrata direttamente nell'interfaccia
+  - Visualizzazione e caricamento degli stili salvati nel GeoPackage
+  - Tabella stili con colonne: Layer, Nome Stile, Default, Descrizione, Ultima Modifica, Opzioni
+  - Aggiornamento automatico degli stili quando si passa al tab
+  - Info GeoPackage sincronizzata tra i tab
+  - Tab posizionato solo nella sezione bassa (selezione GPKG e salvataggio sempre visibili)
+- **Applicazione Stili**: Implementata funzionalità completa di applicazione stili ai layer
+  - Applica stili ai layer presenti nel progetto corrente con doppio clic o menu
+  - Recupero automatico dello stile QML dal database
+  - Aggiornamento immediato della visualizzazione della mappa
+  - Gestione errori con messaggi chiari (layer non trovato, GPKG non valido, ecc.)
+- **Menu Opzioni Stili**: Menu completo per ogni stile con azioni funzionanti
+  - 🎨 Applica Stile: applica lo stile al layer nel progetto
+  - 📥 Esporta QML: esporta lo stile come file QML
+  - ✏️ Rinomina: rinomina lo stile nel database
+  - 📋 Duplica: crea una copia dello stile
+  - ⭐ Imposta come Default: imposta lo stile come default per il layer
+  - 🗑️ Elimina: elimina lo stile dal database (con conferma)
+
+### 🔧 Migliorato
+- **Gestione Stili**: Rimosso dialog separato, ora integrato come tab
+  - Navigazione più fluida senza aprire/chiudere finestre
+  - Accesso diretto agli stili con un solo clic sul tab
+  - Interfaccia più pulita e moderna (rimosso header ridondante)
+  - Miglior esperienza utente con tutto in un'unica finestra
+  - Layout ottimizzato: sezioni principali sempre accessibili, tab solo per progetti/stili
+- **Codice**: Rimosso file `dialog_styles.py` obsoleto e ottimizzato script di creazione ZIP
+
+---
+
 ## [3.4.2] - 2025-12-05
 
 ### 🎉 Aggiunto

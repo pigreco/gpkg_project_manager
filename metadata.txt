@@ -3,7 +3,7 @@ name=GeoPackage Project Manager
 qgisMinimumVersion=3.0
 description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
 description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
-version=3.4.2
+version=3.5.0
 author=Salvatore Fiandaca (Totò)
 email=pigrecoinfinito@gmail.com
 
@@ -65,9 +65,15 @@ server=False
 # Supported languages: English (en), Italian (it - default)
 available_languages=en,it
 
-changelog=3.4.2
+changelog=3.5.0
+    • Interfaccia a Tab: gestione stili integrata direttamente nell'interfaccia principale (Tab "🎨 Stili")
+    • Navigazione migliorata: passa facilmente tra gestione progetti e stili senza aprire finestre separate
+    • Tab Progetti: visualizzazione e gestione progetti GeoPackage
+    • Tab Stili: visualizzazione, caricamento e gestione stili layer salvati nel GeoPackage
+    3.4.2
     • Nuovo checkbox "Usa nome GeoPackage": imposta automaticamente il nome del progetto uguale al nome del GeoPackage
     • Checkbox Versioning migliorato: layout ottimizzato, testo semplificato e tooltip descrittivo
+    • Campo descrizione progetto: aggiungi note e descrizioni opzionali ai progetti
     3.3.1
     • Bug fix critici: corretti 6 bug importanti (rinomina/duplicazione metadati, flag is_new, test traduzione, reset dialog, ricaricamento)
     • Fix rinomina progetto: i metadati ora vengono aggiornati correttamente quando si rinomina un progetto

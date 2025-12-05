@@ -875,5 +875,151 @@ Layer: {}
         <source>Layer</source>
         <translation>Layers</translation>
     </message>
+    <message>
+        <source>🎨 Applica Stile</source>
+        <translation>🎨 Apply Style</translation>
+    </message>
+    <message>
+        <source>📥 Esporta QML</source>
+        <translation>📥 Export QML</translation>
+    </message>
+    <message>
+        <source>✏️ Rinomina</source>
+        <translation>✏️ Rename</translation>
+    </message>
+    <message>
+        <source>📋 Duplica</source>
+        <translation>📋 Duplicate</translation>
+    </message>
+    <message>
+        <source>⭐ Imposta come Default</source>
+        <translation>⭐ Set as Default</translation>
+    </message>
+    <message>
+        <source>🗑️ Elimina</source>
+        <translation>🗑️ Delete</translation>
+    </message>
+    <message>
+        <source>Applica Stile</source>
+        <translation>Apply Style</translation>
+    </message>
+    <message>
+        <source>GeoPackage non valido.</source>
+        <translation>Invalid GeoPackage.</translation>
+    </message>
+    <message>
+        <source>Layer non trovato</source>
+        <translation>Layer not found</translation>
+    </message>
+    <message>
+        <source>Il layer '{}' non è presente nel progetto corrente.
+
+Carica prima il layer nel progetto.</source>
+        <translation>The layer '{}' is not present in the current project.
+
+Load the layer into the project first.</translation>
+    </message>
+    <message>
+        <source>Stile '{}' applicato al layer '{}'.</source>
+        <translation>Style '{}' applied to layer '{}'.</translation>
+    </message>
+    <message>
+        <source>Errore nell'applicazione dello stile:
+{}</source>
+        <translation>Error applying style:
+{}</translation>
+    </message>
+    <message>
+        <source>Esporta Stile QML</source>
+        <translation>Export Style QML</translation>
+    </message>
+    <message>
+        <source>File QML (*.qml)</source>
+        <translation>QML File (*.qml)</translation>
+    </message>
+    <message>
+        <source>Stile esportato con successo in:
+{}</source>
+        <translation>Style successfully exported to:
+{}</translation>
+    </message>
+    <message>
+        <source>Impossibile trovare lo stile nel database.</source>
+        <translation>Unable to find the style in the database.</translation>
+    </message>
+    <message>
+        <source>Errore nell'esportazione dello stile:
+{}</source>
+        <translation>Error exporting style:
+{}</translation>
+    </message>
+    <message>
+        <source>Rinomina Stile</source>
+        <translation>Rename Style</translation>
+    </message>
+    <message>
+        <source>Nuovo nome per lo stile:</source>
+        <translation>New name for the style:</translation>
+    </message>
+    <message>
+        <source>Stile rinominato con successo.</source>
+        <translation>Style renamed successfully.</translation>
+    </message>
+    <message>
+        <source>Errore nella rinomina dello stile:
+{}</source>
+        <translation>Error renaming style:
+{}</translation>
+    </message>
+    <message>
+        <source>Duplica Stile</source>
+        <translation>Duplicate Style</translation>
+    </message>
+    <message>
+        <source>Nome per la copia dello stile:</source>
+        <translation>Name for the style copy:</translation>
+    </message>
+    <message>
+        <source>Stile duplicato con successo.</source>
+        <translation>Style duplicated successfully.</translation>
+    </message>
+    <message>
+        <source>Errore nella duplicazione dello stile:
+{}</source>
+        <translation>Error duplicating style:
+{}</translation>
+    </message>
+    <message>
+        <source>Stile impostato come default per il layer.</source>
+        <translation>Style set as default for the layer.</translation>
+    </message>
+    <message>
+        <source>Errore nell'impostazione dello stile default:
+{}</source>
+        <translation>Error setting default style:
+{}</translation>
+    </message>
+    <message>
+        <source>Elimina Stile</source>
+        <translation>Delete Style</translation>
+    </message>
+    <message>
+        <source>Sei sicuro di voler eliminare lo stile '{}'?
+
+⚠️ Questa operazione non può essere annullata.</source>
+        <translation>Are you sure you want to delete the style '{}'?
+
+⚠️ This operation cannot be undone.</translation>
+    </message>
+    <message>
+        <source>Stile eliminato con successo.</source>
+        <translation>Style deleted successfully.</translation>
+    </message>
+    <message>
+        <source>Errore nell'eliminazione dello stile:
+{}</source>
+        <translation>Error deleting style:
+{}</translation>
+    </message>
 </context>
 </TS>
