@@ -546,7 +546,8 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         gpkg_layout.addLayout(gpkg_select_layout)
 
-        # Info box: dimensione e numero progetti
+        # Info box: dimensione e numero progetti con versioning
+        info_layout = QHBoxLayout()
         self.gpkg_info_label = QLabel(self.tr("ℹ️ Info: --"))
         self.gpkg_info_label.setObjectName("tipLabel")
         self.gpkg_info_label.setStyleSheet("""
@@ -558,7 +559,18 @@ class GeoPackageProjectManagerDialog(QDialog):
                 border-radius: 4px;
             }
         """)
-        gpkg_layout.addWidget(self.gpkg_info_label)
+        info_layout.addWidget(self.gpkg_info_label)
+
+        info_layout.addStretch()
+
+        # Checkbox per aggiungere versione al clone
+        self.chk_clone_add_version = QCheckBox(self.tr("Versioning"))
+        self.chk_clone_add_version.setToolTip(self.tr("Aggiungi versione progressiva al nome del clone (v01, v02, v03, ...)"))
+        self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
+        self.chk_clone_add_version.stateChanged.connect(self.on_clone_version_changed)
+        info_layout.addWidget(self.chk_clone_add_version)
+
+        gpkg_layout.addLayout(info_layout)
 
         # Pulsante Clone GeoPackage e opzioni
         clone_layout = QHBoxLayout()
@@ -585,12 +597,6 @@ class GeoPackageProjectManagerDialog(QDialog):
         self.btn_aggiorna_metadati.setToolTip(self.tr("Rigenera i metadati per tutti i progetti (data, dimensione, layer)"))
         self.btn_aggiorna_metadati.clicked.connect(self.aggiorna_tutti_metadati)
         clone_layout.addWidget(self.btn_aggiorna_metadati)
-
-        # Checkbox per aggiungere versione al clone
-        self.chk_clone_add_version = QCheckBox(self.tr("Versioning (v01, v02, ...)"))
-        self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
-        self.chk_clone_add_version.stateChanged.connect(self.on_clone_version_changed)
-        clone_layout.addWidget(self.chk_clone_add_version)
 
         clone_layout.addStretch()
         gpkg_layout.addLayout(clone_layout)
@@ -640,6 +646,19 @@ class GeoPackageProjectManagerDialog(QDialog):
         version_layout.addWidget(self.chk_add_version)
         version_layout.addStretch()
         save_layout.addLayout(version_layout)
+
+        # Checkbox per usare nome GeoPackage (allineata con il campo nome)
+        gpkg_name_layout = QHBoxLayout()
+        gpkg_name_spacing = QLabel("")  # Label vuota per allineamento
+        gpkg_name_spacing.setFixedWidth(50)
+        gpkg_name_layout.addWidget(gpkg_name_spacing)
+        self.chk_use_gpkg_name = QCheckBox(self.tr("Usa nome GeoPackage"))
+        self.chk_use_gpkg_name.setToolTip(self.tr("Imposta automaticamente il nome del progetto uguale al nome del GeoPackage"))
+        self.chk_use_gpkg_name.setChecked(QSettings().value('gpkg_project_manager/use_gpkg_name', False, type=bool))
+        self.chk_use_gpkg_name.stateChanged.connect(self.on_use_gpkg_name_changed)
+        gpkg_name_layout.addWidget(self.chk_use_gpkg_name)
+        gpkg_name_layout.addStretch()
+        save_layout.addLayout(gpkg_name_layout)
 
         layout.addWidget(save_group)
 
@@ -1376,6 +1395,16 @@ class GeoPackageProjectManagerDialog(QDialog):
         """Handle clone version checkbox state change."""
         settings = QSettings()
         settings.setValue('gpkg_project_manager/clone_add_version', self.chk_clone_add_version.isChecked())
+
+    def on_use_gpkg_name_changed(self, state):
+        """Handle use GeoPackage name checkbox state change."""
+        settings = QSettings()
+        settings.setValue('gpkg_project_manager/use_gpkg_name', self.chk_use_gpkg_name.isChecked())
+
+        if self.chk_use_gpkg_name.isChecked() and self.gpkg_path:
+            # Imposta il nome del progetto uguale al nome del GeoPackage (senza estensione)
+            gpkg_name = os.path.splitext(os.path.basename(self.gpkg_path))[0]
+            self.txt_nome_progetto.setText(gpkg_name)
 
     def salva_progetto(self, force_overwrite=False):
         """Salva il progetto corrente nel GeoPackage.

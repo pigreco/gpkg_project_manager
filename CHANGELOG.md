@@ -7,6 +7,24 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.4.2] - 2025-12-05
+
+### 🎉 Aggiunto
+- **Checkbox "Usa nome GeoPackage"**: Nuovo checkbox nella sezione "Salva Progetto Corrente"
+  - Imposta automaticamente il nome del progetto uguale al nome del GeoPackage
+  - Comodo per mantenere consistenza tra nome progetto e file GeoPackage
+  - Supporto in entrambe le interfacce (lista e tabella)
+
+### 🔧 Migliorato
+- **Checkbox Versioning GeoPackage**: Ottimizzata la visualizzazione nella GUI
+  - Spostato nella riga delle informazioni GeoPackage per migliore organizzazione
+  - Testo semplificato: "Versioning" (rimossa descrizione tra parentesi)
+  - Aggiunto tooltip descrittivo: "Aggiungi versione progressiva al nome del clone (v01, v02, v03, ...)"
+  - Layout più pulito e allineato a destra
+  - Migliore usabilità con descrizione disponibile al passaggio del mouse
+
+---
+
 ## [3.4.1] - 2025-12-04
 
 ### 🎉 Aggiunto

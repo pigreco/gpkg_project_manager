@@ -27,7 +27,8 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 ### 🔢 Versioning e Timestamp / Versioning and Timestamp
 - **Timestamp automatico** / **Automatic timestamp**: Aggiungi automaticamente timestamp ai nomi dei progetti (formato: YYYYMMDDHHmmss) / Automatically add timestamps to project names (format: YYYYMMDDHHmmss)
 - **Versioning incrementale** / **Incremental versioning**: Sistema di versioning automatico per progetti (v01, v02, ..., v99) / Automatic versioning system for projects (v01, v02, ..., v99)
-- **Versioning GeoPackage clonati** / **Cloned GeoPackage versioning**: Versioning automatico per i GeoPackage clonati / Automatic versioning for cloned GeoPackages
+- **Versioning GeoPackage clonati** / **Cloned GeoPackage versioning**: Versioning automatico per i GeoPackage clonati con checkbox dedicato / Automatic versioning for cloned GeoPackages with dedicated checkbox
+- **Usa nome GeoPackage** / **Use GeoPackage name**: Imposta automaticamente il nome del progetto uguale al nome del GeoPackage / Automatically set the project name equal to the GeoPackage name
 - **Sostituzione intelligente** / **Smart replacement**: Sostituisce automaticamente timestamp e versioni esistenti invece di accumularli / Automatically replaces existing timestamps and versions instead of accumulating them
 - **Impostazioni persistenti** / **Persistent settings**: Le preferenze di timestamp e versioning vengono salvate tra le sessioni / Timestamp and versioning preferences are saved between sessions
 

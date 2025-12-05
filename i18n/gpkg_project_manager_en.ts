@@ -83,6 +83,22 @@
         <translation>Versioning (v01, v02, ...)</translation>
     </message>
     <message>
+        <source>Versioning</source>
+        <translation>Versioning</translation>
+    </message>
+    <message>
+        <source>Aggiungi versione progressiva al nome del clone (v01, v02, v03, ...)</source>
+        <translation>Add progressive version to clone name (v01, v02, v03, ...)</translation>
+    </message>
+    <message>
+        <source>Usa nome GeoPackage</source>
+        <translation>Use GeoPackage name</translation>
+    </message>
+    <message>
+        <source>Imposta automaticamente il nome del progetto uguale al nome del GeoPackage</source>
+        <translation>Automatically set the project name equal to the GeoPackage name</translation>
+    </message>
+    <message>
         <source>  📋  Progetti nel GeoPackage</source>
         <translation>  📋  Projects in GeoPackage</translation>
     </message>

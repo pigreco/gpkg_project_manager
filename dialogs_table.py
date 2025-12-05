@@ -608,7 +608,8 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         gpkg_layout.addLayout(gpkg_select_layout)
 
-        # Info box: dimensione e numero progetti
+        # Info box: dimensione e numero progetti con versioning
+        info_layout = QHBoxLayout()
         self.gpkg_info_label = QLabel(self.tr("ℹ️ Info: --"))
         self.gpkg_info_label.setObjectName("tipLabel")
         self.gpkg_info_label.setStyleSheet("""
@@ -620,7 +621,18 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
                 border-radius: 4px;
             }
         """)
-        gpkg_layout.addWidget(self.gpkg_info_label)
+        info_layout.addWidget(self.gpkg_info_label)
+
+        info_layout.addStretch()
+
+        # Checkbox per aggiungere versione al clone
+        self.chk_clone_add_version = QCheckBox(self.tr("Versioning"))
+        self.chk_clone_add_version.setToolTip(self.tr("Aggiungi versione progressiva al nome del clone (v01, v02, v03, ...)"))
+        self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
+        self.chk_clone_add_version.stateChanged.connect(self.on_clone_version_changed)
+        info_layout.addWidget(self.chk_clone_add_version)
+
+        gpkg_layout.addLayout(info_layout)
 
         # Pulsante Clone GeoPackage e opzioni
         clone_layout = QHBoxLayout()
@@ -656,12 +668,6 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         self.btn_gestione_stili.setToolTip(self.tr("Visualizza e gestisci gli stili salvati nel GeoPackage"))
         self.btn_gestione_stili.clicked.connect(self.apri_gestione_stili)
         clone_layout.addWidget(self.btn_gestione_stili)
-
-        # Checkbox per aggiungere versione al clone
-        self.chk_clone_add_version = QCheckBox(self.tr("Versioning (v01, v02, ...)"))
-        self.chk_clone_add_version.setChecked(QSettings().value('gpkg_project_manager/clone_add_version', False, type=bool))
-        self.chk_clone_add_version.stateChanged.connect(self.on_clone_version_changed)
-        clone_layout.addWidget(self.chk_clone_add_version)
 
         clone_layout.addStretch()
         gpkg_layout.addLayout(clone_layout)
@@ -707,7 +713,15 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         self.chk_add_version.setToolTip(self.tr("Aggiungi versione incrementale al nome del progetto\nFormato: progetto_vNN (dove NN è un numero progressivo)\nEsempio: mio_progetto_v01, mio_progetto_v02, ..."))
         self.chk_add_version.stateChanged.connect(self.on_version_changed)
         options_layout.addWidget(self.chk_add_version)
-        
+
+        options_layout.addSpacing(20)
+
+        self.chk_use_gpkg_name = QCheckBox(self.tr("Usa nome GeoPackage"))
+        self.chk_use_gpkg_name.setChecked(QSettings().value('gpkg_project_manager/use_gpkg_name', False, type=bool))
+        self.chk_use_gpkg_name.setToolTip(self.tr("Imposta automaticamente il nome del progetto uguale al nome del GeoPackage"))
+        self.chk_use_gpkg_name.stateChanged.connect(self.on_use_gpkg_name_changed)
+        options_layout.addWidget(self.chk_use_gpkg_name)
+
         options_layout.addStretch()
         save_layout.addLayout(options_layout)
 
