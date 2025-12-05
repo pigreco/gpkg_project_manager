@@ -12,7 +12,7 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 
 **GeoPackage Project Manager** is a QGIS plugin that allows you to save, load, and manage QGIS projects directly within GeoPackage files. While QGIS natively supports saving projects in GeoPackage, it doesn't provide functionality to rename, duplicate, or delete them once saved. This plugin fills this gap and adds many other useful features, offering a modern and intuitive interface with full support for Qt5 and Qt6.
 
-![GUI](gui_table.png)
+![GUI](gui_table_tab.png)
 
 ## Funzionalità Principali / Main Features
 
