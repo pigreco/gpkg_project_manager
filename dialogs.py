@@ -660,6 +660,16 @@ class GeoPackageProjectManagerDialog(QDialog):
         gpkg_name_layout.addStretch()
         save_layout.addLayout(gpkg_name_layout)
 
+        # Campo descrizione (allineato con il campo nome)
+        desc_layout = QHBoxLayout()
+        desc_label = QLabel(self.tr("Descr:"))
+        desc_label.setFixedWidth(50)
+        desc_layout.addWidget(desc_label)
+        self.txt_descrizione = QLineEdit()
+        self.txt_descrizione.setPlaceholderText(self.tr("Descrizione opzionale del progetto..."))
+        desc_layout.addWidget(self.txt_descrizione)
+        save_layout.addLayout(desc_layout)
+
         layout.addWidget(save_group)
 
         # === SEZIONE PROGETTI ===
@@ -736,7 +746,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.3 • Qt5/Qt6 Compatible"))
+        version_label = QLabel(self.tr("v3.4.2 • Qt5/Qt6 Compatible"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
@@ -977,9 +987,14 @@ class GeoPackageProjectManagerDialog(QDialog):
                 cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN crs_epsg TEXT")
             except:
                 pass  # Colonna già esistente
-            
+
             try:
                 cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN table_count INTEGER")
+            except:
+                pass  # Colonna già esistente
+
+            try:
+                cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN description TEXT")
             except:
                 pass  # Colonna già esistente
             
@@ -1090,17 +1105,18 @@ class GeoPackageProjectManagerDialog(QDialog):
 
         return metadata
 
-    def salva_metadati_progetto(self, conn, project_name, content, is_new=True, update_modified_date=True, project_crs=None):
+    def salva_metadati_progetto(self, conn, project_name, content, is_new=True, update_modified_date=True, project_crs=None, description=None):
         """Salva o aggiorna i metadati del progetto.
-        
+
         Args:
             conn: Connessione SQLite
             project_name: Nome del progetto
             content: Contenuto XML del progetto
             is_new: True se è un nuovo progetto
-            update_modified_date: True per aggiornare la data di modifica (default), 
+            update_modified_date: True per aggiornare la data di modifica (default),
                                   False per mantenerla invariata (utile per aggiornamento metadati)
             project_crs: CRS del progetto (opzionale, se fornito ha priorità sull'estrazione dal XML)
+            description: Descrizione del progetto (opzionale)
         """
         try:
             # Assicurati che la tabella esista
@@ -1120,38 +1136,38 @@ class GeoPackageProjectManagerDialog(QDialog):
                 # Nuovo progetto: created_date = modified_date
                 cursor.execute("""
                     INSERT OR REPLACE INTO qgis_projects_metadata
-                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (project_name, now, now, metadata['size_bytes'], metadata['layer_count'],
-                      metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg']))
+                      metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg'], description))
             else:
                 # Aggiornamento: mantieni created_date, aggiorna modified_date solo se richiesto
                 if update_modified_date:
                     # Progetto modificato realmente: aggiorna modified_date
                     cursor.execute("""
                         INSERT OR REPLACE INTO qgis_projects_metadata
-                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
+                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
                         VALUES (
                             ?,
                             COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
                             ?,
-                            ?, ?, ?, ?, ?, ?
+                            ?, ?, ?, ?, ?, ?, ?
                         )
                     """, (project_name, project_name, now, now, metadata['size_bytes'],
-                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg']))
+                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg'], description))
                 else:
                     # Solo aggiornamento metadati: mantieni modified_date esistente
                     cursor.execute("""
                         INSERT OR REPLACE INTO qgis_projects_metadata
-                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
+                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
                         VALUES (
                             ?,
                             COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
                             COALESCE((SELECT modified_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
-                            ?, ?, ?, ?, ?, ?
+                            ?, ?, ?, ?, ?, ?, ?
                         )
                     """, (project_name, project_name, now, project_name, now, metadata['size_bytes'],
-                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg']))
+                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg'], description))
 
             conn.commit()
         except Exception as e:
@@ -1501,8 +1517,9 @@ class GeoPackageProjectManagerDialog(QDialog):
                     result = cursor.fetchone()
                     if result:
                         content = result[0]
-                        # Passa il CRS estratto al metodo di salvataggio
-                        self.salva_metadati_progetto(conn, nome_progetto, content, is_new=is_new, project_crs=project_crs)
+                        # Passa il CRS estratto e la descrizione al metodo di salvataggio
+                        descrizione = self.txt_descrizione.text().strip() or None
+                        self.salva_metadati_progetto(conn, nome_progetto, content, is_new=is_new, project_crs=project_crs, description=descrizione)
                     conn.close()
                 except Exception as e:
                     pass  # Errore non critico

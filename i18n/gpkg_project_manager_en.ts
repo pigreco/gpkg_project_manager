@@ -851,5 +851,29 @@ Layer: {}
         <translation>Error deleting style:
 {}</translation>
     </message>
+    <message>
+        <source>Descr:</source>
+        <translation>Desc:</translation>
+    </message>
+    <message>
+        <source>Descrizione opzionale del progetto...</source>
+        <translation>Optional project description...</translation>
+    </message>
+    <message>
+        <source>Creato</source>
+        <translation>Created</translation>
+    </message>
+    <message>
+        <source>Modificato</source>
+        <translation>Modified</translation>
+    </message>
+    <message>
+        <source>Dimensione</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation>Layers</translation>
+    </message>
 </context>
 </TS>

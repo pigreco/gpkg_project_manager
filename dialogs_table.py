@@ -725,6 +725,16 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         options_layout.addStretch()
         save_layout.addLayout(options_layout)
 
+        # Campo descrizione (allineato con il campo nome)
+        desc_layout = QHBoxLayout()
+        desc_label = QLabel(self.tr("Descr:"))
+        desc_label.setFixedWidth(50)
+        desc_layout.addWidget(desc_label)
+        self.txt_descrizione = QLineEdit()
+        self.txt_descrizione.setPlaceholderText(self.tr("Descrizione opzionale del progetto..."))
+        desc_layout.addWidget(self.txt_descrizione)
+        save_layout.addLayout(desc_layout)
+
         layout.addWidget(save_group)
 
         # === SEZIONE PROGETTI - TABELLA ===
@@ -786,7 +796,7 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.3 • Qt5/Qt6 Compatible • Table View"))
+        version_label = QLabel(self.tr("v3.4.2 • Qt5/Qt6 Compatible • Table View"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
@@ -829,7 +839,7 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
                 self.crea_tabella_metadata(conn)
                 
                 cursor.execute("""
-                    SELECT 
+                    SELECT
                         p.name,
                         m.created_date,
                         m.modified_date,
@@ -838,7 +848,8 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
                         m.vector_count,
                         m.raster_count,
                         m.table_count,
-                        m.crs_epsg
+                        m.crs_epsg,
+                        m.description
                     FROM qgis_projects p
                     LEFT JOIN qgis_projects_metadata m ON p.name = m.project_name
                     ORDER BY p.name
@@ -857,11 +868,11 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
     def aggiungi_riga_progetto(self, dati):
         """Aggiunge una riga alla tabella progetti.
-        
+
         Args:
-            dati: tuple (nome, data_creazione, data_modifica, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg)
+            dati: tuple (nome, data_creazione, data_modifica, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
         """
-        nome, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg = dati
+        nome, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description = dati
         
         row_position = self.tabella_progetti.rowCount()
         self.tabella_progetti.insertRow(row_position)
@@ -898,6 +909,50 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         else:
             item_nome = QTableWidgetItem(f"  📋  {nome}")
         item_nome.setData(UserRole, nome)
+
+        # Crea tooltip con informazioni metadata
+        tooltip_parts = []
+        tooltip_parts.append(f"<b>{nome}</b>")
+
+        if description:
+            tooltip_parts.append(f"<i>{description}</i>")
+
+        if created_date:
+            try:
+                dt = datetime.strptime(created_date, '%Y-%m-%d %H:%M:%S')
+                data_formattata = dt.strftime('%d/%m/%Y %H:%M')
+                tooltip_parts.append(f"{self.tr('Creato')}: {data_formattata}")
+            except:
+                tooltip_parts.append(f"{self.tr('Creato')}: {created_date}")
+
+        if modified_date:
+            try:
+                dt = datetime.strptime(modified_date, '%Y-%m-%d %H:%M:%S')
+                data_formattata = dt.strftime('%d/%m/%Y %H:%M')
+                tooltip_parts.append(f"{self.tr('Modificato')}: {data_formattata}")
+            except:
+                tooltip_parts.append(f"{self.tr('Modificato')}: {modified_date}")
+
+        if size_bytes:
+            if size_bytes < 1024:
+                size_str = f"{size_bytes} B"
+            elif size_bytes < 1024 * 1024:
+                size_str = f"{size_bytes / 1024:.1f} KB"
+            else:
+                size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+            tooltip_parts.append(f"{self.tr('Dimensione')}: {size_str}")
+
+        if layer_count:
+            v = vector_count if vector_count else 0
+            r = raster_count if raster_count else 0
+            t = table_count if table_count else 0
+            tooltip_parts.append(f"{self.tr('Layer')}: {layer_count} (V:{v} R:{r} T:{t})")
+
+        if crs_epsg:
+            tooltip_parts.append(f"EPSG: {crs_epsg}")
+
+        item_nome.setToolTip("<br>".join(tooltip_parts))
+
         self.tabella_progetti.setItem(row_position, 0, item_nome)
         
         # Colonna 1: Data Creazione

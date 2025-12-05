@@ -14,6 +14,12 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
   - Imposta automaticamente il nome del progetto uguale al nome del GeoPackage
   - Comodo per mantenere consistenza tra nome progetto e file GeoPackage
   - Supporto in entrambe le interfacce (lista e tabella)
+- **Campo Descrizione Progetto**: Aggiunto campo opzionale per descrivere i progetti
+  - Nuovo campo "Descr:" nella sezione "Salva Progetto Corrente"
+  - Descrizione salvata nella tabella `qgis_projects_metadata` (colonna `description`)
+  - Tooltip informativo sui progetti mostra la descrizione quando presente
+  - Tooltip completo con: nome progetto, descrizione, date creazione/modifica, dimensione, layer, EPSG
+  - Supporto retrocompatibilità: colonna aggiunta automaticamente se non esiste
 
 ### 🔧 Migliorato
 - **Checkbox Versioning GeoPackage**: Ottimizzata la visualizzazione nella GUI

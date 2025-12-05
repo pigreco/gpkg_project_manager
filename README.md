@@ -49,9 +49,10 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 
 ### 📊 Sistema Metadati / Metadata System
 - **Metadati automatici** / **Automatic metadata**: Estrae e salva automaticamente metadati dettagliati per ogni progetto / Automatically extracts and saves detailed metadata for each project
-- **Tooltip intelligenti** / **Smart tooltips**: Visualizza informazioni complete al passaggio del mouse sui progetti / Display complete information when hovering over projects
+- **Descrizione progetto** / **Project description**: Campo opzionale per aggiungere note e descrizioni ai progetti / Optional field to add notes and descriptions to projects
+- **Tooltip intelligenti** / **Smart tooltips**: Visualizza informazioni complete al passaggio del mouse sui progetti (include descrizione) / Display complete information when hovering over projects (includes description)
 - **Aggiornamento batch** / **Batch update**: Rigenera i metadati per tutti i progetti con un solo clic / Regenerate metadata for all projects with a single click
-- **Info dettagliate** / **Detailed info**: Data creazione/modifica, dimensione progetto, conteggio layer (vettoriali/raster) / Creation/modification date, project size, layer count (vector/raster)
+- **Info dettagliate** / **Detailed info**: Data creazione/modifica, dimensione progetto, conteggio layer (vettoriali/raster), EPSG / Creation/modification date, project size, layer count (vector/raster), EPSG
 - **Fallback intelligente** / **Smart fallback**: Mostra informazioni base anche per progetti senza metadati completi / Shows basic information even for projects without complete metadata
 
 ### 🎨 Gestione Stili / Styles Management

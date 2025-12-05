@@ -3,7 +3,7 @@ name=GeoPackage Project Manager
 qgisMinimumVersion=3.0
 description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
 description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
-version=3.3.1
+version=3.4.2
 author=Salvatore Fiandaca (Totò)
 email=pigrecoinfinito@gmail.com
 
@@ -65,7 +65,10 @@ server=False
 # Supported languages: English (en), Italian (it - default)
 available_languages=en,it
 
-changelog=3.3.1
+changelog=3.4.2
+    • Nuovo checkbox "Usa nome GeoPackage": imposta automaticamente il nome del progetto uguale al nome del GeoPackage
+    • Checkbox Versioning migliorato: layout ottimizzato, testo semplificato e tooltip descrittivo
+    3.3.1
     • Bug fix critici: corretti 6 bug importanti (rinomina/duplicazione metadati, flag is_new, test traduzione, reset dialog, ricaricamento)
     • Fix rinomina progetto: i metadati ora vengono aggiornati correttamente quando si rinomina un progetto
     • Fix duplicazione progetto: i metadati vengono copiati insieme al progetto duplicato
@@ -104,7 +107,10 @@ changelog=3.3.1
     • Versione iniziale del plugin
     • Gestione base progetti in GeoPackage
 
-changelog[en]=3.3.1
+changelog[en]=3.4.2
+    • New "Use GeoPackage name" checkbox: automatically sets the project name equal to the GeoPackage name
+    • Improved Versioning checkbox: optimized layout, simplified text and descriptive tooltip
+    3.3.1
     • Critical bug fixes: fixed 6 important bugs (rename/duplicate metadata, is_new flag, translation test, dialog reset, reload)
     • Fix rename project: metadata now correctly updated when renaming a project
     • Fix duplicate project: metadata now copied along with duplicated project
