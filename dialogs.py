@@ -973,23 +973,14 @@ class GeoPackageProjectManagerDialog(QDialog):
                     project_name TEXT PRIMARY KEY,
                     created_date TEXT,
                     modified_date TEXT,
-                    size_bytes INTEGER,
-                    layer_count INTEGER,
-                    vector_count INTEGER,
-                    raster_count INTEGER,
-                    table_count INTEGER,
-                    crs_epsg TEXT
+                    crs_epsg TEXT,
+                    description TEXT
                 )
             """)
-            
+
             # Aggiunge colonne se non esistono (per retrocompatibilità)
             try:
                 cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN crs_epsg TEXT")
-            except:
-                pass  # Colonna già esistente
-
-            try:
-                cursor.execute("ALTER TABLE qgis_projects_metadata ADD COLUMN table_count INTEGER")
             except:
                 pass  # Colonna già esistente
 
@@ -1019,11 +1010,6 @@ class GeoPackageProjectManagerDialog(QDialog):
     def estrai_metadati_progetto(self, content):
         """Estrae metadati automatici dal contenuto del progetto."""
         metadata = {
-            'layer_count': 0,
-            'vector_count': 0,
-            'raster_count': 0,
-            'table_count': 0,
-            'size_bytes': len(content) if content else 0,
             'crs_epsg': None
         }
 
@@ -1042,42 +1028,8 @@ class GeoPackageProjectManagerDialog(QDialog):
                         continue
 
             if qgs_content:
-                # Conta i layer usando regex semplice (più veloce di XML parsing completo)
                 import re
-                
-                # Conta layer vettoriali (con geometria)
-                # Pattern per trovare layer vettoriali con geometria (Point, Line, Polygon, etc.)
-                vector_with_geom = r'<maplayer[^>]*type="vector"[^>]*geometry="(?!No Geometry)([^"]+)"'
-                metadata['vector_count'] = len(re.findall(vector_with_geom, qgs_content, re.DOTALL))
-                
-                # Conta layer raster
-                raster_pattern = r'<maplayer[^>]*type="raster"'
-                metadata['raster_count'] = len(re.findall(raster_pattern, qgs_content))
-                
-                # Conta tabelle (layer vettoriali senza geometria, escluse tabelle di sistema)
-                # Le tabelle hanno geometry="No Geometry" o nessun attributo geometry
-                table_pattern = r'<maplayer[^>]*type="vector"[^>]*geometry="No Geometry"'
-                all_tables = re.findall(table_pattern, qgs_content, re.DOTALL)
-                
-                # Filtra tabelle di sistema (qgis_, sqlite_, gpkg_)
-                # Cerca il nome della tabella per ogni match
-                table_count = 0
-                for match in re.finditer(table_pattern, qgs_content, re.DOTALL):
-                    # Trova il datasource dopo questo match
-                    start_pos = match.start()
-                    datasource_match = re.search(r'<datasource>([^<]+)</datasource>', qgs_content[start_pos:start_pos+2000])
-                    if datasource_match:
-                        datasource = datasource_match.group(1)
-                        # Controlla se NON è una tabella di sistema
-                        if not any(sys_prefix in datasource.lower() for sys_prefix in ['qgis_', 'sqlite_', 'gpkg_', 'rtree_']):
-                            table_count += 1
-                    else:
-                        # Se non troviamo datasource, contiamo comunque
-                        table_count += 1
-                
-                metadata['table_count'] = table_count
-                metadata['layer_count'] = metadata['vector_count'] + metadata['raster_count'] + metadata['table_count']
-                
+
                 # Estrai EPSG dal progetto - Prova diversi pattern
                 # Pattern 1: <projectCrs><spatialrefsys>...<authid>EPSG:XXXX</authid>
                 epsg_match = re.search(r'<projectCrs>.*?<authid>(EPSG:\d+)</authid>', qgs_content, re.DOTALL)
@@ -1136,38 +1088,35 @@ class GeoPackageProjectManagerDialog(QDialog):
                 # Nuovo progetto: created_date = modified_date
                 cursor.execute("""
                     INSERT OR REPLACE INTO qgis_projects_metadata
-                    (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (project_name, now, now, metadata['size_bytes'], metadata['layer_count'],
-                      metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg'], description))
+                    (project_name, created_date, modified_date, crs_epsg, description)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (project_name, now, now, metadata['crs_epsg'], description))
             else:
                 # Aggiornamento: mantieni created_date, aggiorna modified_date solo se richiesto
                 if update_modified_date:
                     # Progetto modificato realmente: aggiorna modified_date
                     cursor.execute("""
                         INSERT OR REPLACE INTO qgis_projects_metadata
-                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
+                        (project_name, created_date, modified_date, crs_epsg, description)
                         VALUES (
                             ?,
                             COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
                             ?,
-                            ?, ?, ?, ?, ?, ?, ?
+                            ?, ?
                         )
-                    """, (project_name, project_name, now, now, metadata['size_bytes'],
-                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg'], description))
+                    """, (project_name, project_name, now, now, metadata['crs_epsg'], description))
                 else:
                     # Solo aggiornamento metadati: mantieni modified_date esistente
                     cursor.execute("""
                         INSERT OR REPLACE INTO qgis_projects_metadata
-                        (project_name, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
+                        (project_name, created_date, modified_date, crs_epsg, description)
                         VALUES (
                             ?,
                             COALESCE((SELECT created_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
                             COALESCE((SELECT modified_date FROM qgis_projects_metadata WHERE project_name = ?), ?),
-                            ?, ?, ?, ?, ?, ?, ?
+                            ?, ?
                         )
-                    """, (project_name, project_name, now, project_name, now, metadata['size_bytes'],
-                          metadata['layer_count'], metadata['vector_count'], metadata['raster_count'], metadata['table_count'], metadata['crs_epsg'], description))
+                    """, (project_name, project_name, now, project_name, now, metadata['crs_epsg'], description))
 
             conn.commit()
         except Exception as e:
@@ -1184,7 +1133,7 @@ class GeoPackageProjectManagerDialog(QDialog):
 
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg
+                SELECT created_date, modified_date, crs_epsg, description
                 FROM qgis_projects_metadata
                 WHERE project_name = ?
             """, (project_name,))
@@ -1196,12 +1145,8 @@ class GeoPackageProjectManagerDialog(QDialog):
                 return {
                     'created_date': result[0],
                     'modified_date': result[1],
-                    'size_bytes': result[2],
-                    'layer_count': result[3],
-                    'vector_count': result[4],
-                    'raster_count': result[5],
-                    'table_count': result[6] if len(result) > 6 else 0,
-                    'crs_epsg': result[7] if len(result) > 7 else None
+                    'crs_epsg': result[2],
+                    'description': result[3] if len(result) > 3 else None
                 }
         except Exception as e:
             pass
@@ -1222,15 +1167,6 @@ class GeoPackageProjectManagerDialog(QDialog):
                     metadata = self.leggi_metadati_progetto(project_name)
 
                     if metadata:
-                        # Formatta dimensione
-                        size_bytes = metadata.get('size_bytes', 0)
-                        if size_bytes < 1024:
-                            size_str = f"{size_bytes} B"
-                        elif size_bytes < 1024 * 1024:
-                            size_str = f"{size_bytes / 1024:.1f} KB"
-                        else:
-                            size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-
                         # Formatta date
                         created = metadata.get('created_date', 'N/A')
                         if created and created != 'N/A':
@@ -1250,14 +1186,8 @@ class GeoPackageProjectManagerDialog(QDialog):
                             except:
                                 pass
 
-                        # Costruisci info layer
-                        layer_count = metadata.get('layer_count', 0)
-                        vector_count = metadata.get('vector_count', 0)
-                        raster_count = metadata.get('raster_count', 0)
-
-                        layer_info = f"{layer_count}"
-                        if vector_count > 0 or raster_count > 0:
-                            layer_info += f" ({vector_count}v, {raster_count}r)"
+                        crs_epsg = metadata.get('crs_epsg', 'N/A')
+                        description = metadata.get('description', '')
 
                         # Crea tooltip HTML
                         tooltip_html = f"""
@@ -1268,8 +1198,8 @@ class GeoPackageProjectManagerDialog(QDialog):
                             <table style='border-collapse: collapse; width: 100%;'>
                                 <tr><td style='padding: 3px 8px 3px 0;'><b>📅 {self.tr("Creato")}:</b></td><td style='padding: 3px 0;'>{created}</td></tr>
                                 <tr><td style='padding: 3px 8px 3px 0;'><b>🔄 {self.tr("Modificato")}:</b></td><td style='padding: 3px 0;'>{modified}</td></tr>
-                                <tr><td style='padding: 3px 8px 3px 0;'><b>💾 {self.tr("Dimensione")}:</b></td><td style='padding: 3px 0;'>{size_str}</td></tr>
-                                <tr><td style='padding: 3px 8px 3px 0;'><b>🗂️ {self.tr("Layer")}:</b></td><td style='padding: 3px 0;'>{layer_info}</td></tr>
+                                <tr><td style='padding: 3px 8px 3px 0;'><b>🌐 EPSG:</b></td><td style='padding: 3px 0;'>{crs_epsg}</td></tr>
+                                {f"<tr><td colspan='2' style='padding: 3px 0;'><b>📝 {description}</b></td></tr>" if description else ""}
                             </table>
                         </div>
                         """
@@ -1277,41 +1207,17 @@ class GeoPackageProjectManagerDialog(QDialog):
                         QToolTip.showText(event.globalPos(), tooltip_html, self.lista_progetti)
                         return True
                     else:
-                        # Fallback: leggi almeno la dimensione del progetto direttamente dal database
-                        try:
-                            conn = sqlite3.connect(self.gpkg_path)
-                            cursor = conn.cursor()
-                            cursor.execute("SELECT length(content) FROM qgis_projects WHERE name = ?", (project_name,))
-                            result = cursor.fetchone()
-                            conn.close()
-
-                            if result and result[0]:
-                                size_bytes = result[0]
-                                if size_bytes < 1024:
-                                    size_str = f"{size_bytes} B"
-                                elif size_bytes < 1024 * 1024:
-                                    size_str = f"{size_bytes / 1024:.1f} KB"
-                                else:
-                                    size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-
-                                tooltip_simple = f"""
-                                <div style='background-color: #f8f9fa; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;'>
-                                    <div style='background-color: #6b7280; color: white; padding: 6px; margin: -8px -8px 8px -8px; border-radius: 4px 4px 0 0; font-weight: bold;'>
-                                        📋 {project_name}
-                                    </div>
-                                    <div style='padding: 5px 0;'>
-                                        <b>💾 {self.tr("Dimensione")}:</b> {size_str}
-                                    </div>
-                                    <div style='padding: 5px 0; font-size: 10px; color: #6b7280; font-style: italic;'>
-                                        {self.tr("Dettagli completi disponibili dopo il primo salvataggio")}
-                                    </div>
-                                </div>
-                                """
-                            else:
-                                tooltip_simple = f"<b>📋 {project_name}</b>"
-                        except:
-                            tooltip_simple = f"<b>📋 {project_name}</b>"
-
+                        # Fallback: tooltip semplice se metadati non disponibili
+                        tooltip_simple = f"""
+                        <div style='background-color: #f8f9fa; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;'>
+                            <div style='background-color: #6b7280; color: white; padding: 6px; margin: -8px -8px 8px -8px; border-radius: 4px 4px 0 0; font-weight: bold;'>
+                                📋 {project_name}
+                            </div>
+                            <div style='padding: 5px 0; font-size: 10px; color: #6b7280; font-style: italic;'>
+                                {self.tr("Dettagli disponibili dopo aggiornamento metadati")}
+                            </div>
+                        </div>
+                        """
                         QToolTip.showText(event.globalPos(), tooltip_simple, self.lista_progetti)
                         return True
 
@@ -2216,8 +2122,7 @@ class GeoPackageProjectManagerDialog(QDialog):
                 self.tr("Progetti trovati: {0}\n\n"
                         "Questa operazione rigenererà i metadati per tutti i progetti:\n"
                         "• Data creazione e modifica\n"
-                        "• Dimensione del progetto\n"
-                        "• Conteggio layer (vettoriali/raster)\n\n"
+                        "• EPSG del progetto\n\n"
                         "Vuoi continuare?").format(total_projects)
             )
             msg.setStandardButtons(MsgBoxYes | MsgBoxNo)

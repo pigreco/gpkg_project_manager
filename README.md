@@ -48,11 +48,12 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Operazione VACUUM** / **VACUUM operation**: Rimuove spazio inutilizzato e ottimizza le tabelle del database / Removes unused space and optimizes database tables
 
 ### 📊 Sistema Metadati / Metadata System
-- **Metadati automatici** / **Automatic metadata**: Estrae e salva automaticamente metadati dettagliati per ogni progetto / Automatically extracts and saves detailed metadata for each project
+- **Metadati automatici** / **Automatic metadata**: Estrae e salva automaticamente metadati essenziali per ogni progetto / Automatically extracts and saves essential metadata for each project
 - **Descrizione progetto** / **Project description**: Campo opzionale per aggiungere note e descrizioni ai progetti / Optional field to add notes and descriptions to projects
+- **Popolamento automatico** / **Auto-population**: La descrizione si popola automaticamente quando si seleziona un progetto / Description automatically populates when selecting a project
+- **Tabella semplificata** / **Simplified table**: Metadati essenziali (nome, date, EPSG, descrizione) senza campi ridondanti / Essential metadata (name, dates, EPSG, description) without redundant fields
+- **Aggiornamento batch** / **Batch update**: Rigenera i metadati (date e EPSG) per tutti i progetti con un solo clic / Regenerate metadata (dates and EPSG) for all projects with a single click
 - **Tooltip intelligenti** / **Smart tooltips**: Visualizza informazioni complete al passaggio del mouse sui progetti (include descrizione) / Display complete information when hovering over projects (includes description)
-- **Aggiornamento batch** / **Batch update**: Rigenera i metadati per tutti i progetti con un solo clic / Regenerate metadata for all projects with a single click
-- **Info dettagliate** / **Detailed info**: Data creazione/modifica, dimensione progetto, conteggio layer (vettoriali/raster), EPSG / Creation/modification date, project size, layer count (vector/raster), EPSG
 - **Fallback intelligente** / **Smart fallback**: Mostra informazioni base anche per progetti senza metadati completi / Shows basic information even for projects without complete metadata
 
 ### 🎨 Gestione Stili / Styles Management
@@ -65,10 +66,27 @@ QGIS Plugin for complete management of QGIS projects within GeoPackage files.
 - **Tabella ordinabile** / **Sortable table**: Visualizzazione tabellare con ordinamento per layer, nome, data modifica / Table view with sorting by layer, name, modification date
 - **Applicazione automatica** / **Automatic application**: Aggiornamento immediato della mappa dopo applicazione stile / Immediate map update after style application
 
+### 🔗 Gestione Relazioni / Relations Management
+- **Visualizzazione completa relazioni** / **Complete relations view**: Visualizza tutte le relazioni tra tabelle del GeoPackage / View all relations between GeoPackage tables
+- **Foreign Keys (FK)** / **Foreign Keys (FK)**: Mostra le foreign key definite a livello database / Shows foreign keys defined at database level
+- **GeoPackage Extension** / **GeoPackage Extension**: Visualizza relazioni dalla tabella `gpkgext_relations` / View relations from `gpkgext_relations` table
+- **Relazioni di Progetto QGIS** / **QGIS Project Relations**: Mostra le relazioni definite nel progetto QGIS selezionato / Shows relations defined in the selected QGIS project
+  - **Estrazione automatica** / **Automatic extraction**: Legge le relazioni dal progetto salvato nel GeoPackage / Reads relations from the project saved in the GeoPackage
+  - **Tipo relazione** / **Relation type**: Mostra se la relazione è Association (debole) o Composition (forte con cascata) / Shows if the relation is Association (weak) or Composition (strong with cascade)
+  - **Cardinalità** / **Cardinality**: Visualizza la cardinalità della relazione (es. 1:N) / Displays the relation cardinality (e.g. 1:N)
+  - **Decodifica HEX** / **HEX decoding**: Supporto progetti salvati come stringa esadecimale / Support for projects saved as hexadecimal string
+  - **Anti-duplicati** / **Anti-duplicates**: Filtro automatico per relazioni duplicate / Automatic filter for duplicate relations
+- **Interfaccia integrata a Tab** / **Integrated tab interface**: Accesso diretto con tab dedicato "🔗 Relazioni" / Direct access with dedicated "🔗 Relations" tab
+- **Tabella dettagliata** / **Detailed table**: 6 colonne con Nome Relazione, Tabelle, Campi e Tipo / 6 columns with Relation Name, Tables, Fields and Type
+- **Contatore intelligente** / **Smart counter**: Mostra numero totale e dettaglio per tipo (FK: X, GPKG: Y, Progetto: Z) / Shows total number and detail by type (FK: X, GPKG: Y, Project: Z)
+- **Aggiornamento automatico** / **Automatic update**: Le relazioni si aggiornano quando si seleziona un progetto / Relations update when selecting a project
+- **Pulsante Aggiorna** / **Refresh button**: Ricarica manualmente le relazioni con il pulsante "⟳ Aggiorna" / Manually reload relations with "⟳ Refresh" button
+
 ### 🎨 Interfaccia Moderna / Modern Interface
-- **Interfaccia a Tab** / **Tabbed interface**: Navigazione fluida tra Progetti e Stili con tab dedicati / Smooth navigation between Projects and Styles with dedicated tabs
+- **Interfaccia a Tab** / **Tabbed interface**: Navigazione fluida tra Progetti, Stili e Relazioni con tab dedicati / Smooth navigation between Projects, Styles and Relations with dedicated tabs
   - **Tab "📋 Progetti"**: Gestione completa progetti GeoPackage / Complete GeoPackage project management
   - **Tab "🎨 Stili"**: Gestione stili integrata / Integrated styles management
+  - **Tab "🔗 Relazioni"**: Visualizzazione relazioni tra tabelle / Relations between tables visualization
 - **Doppia interfaccia disponibile** / **Dual interface available**:
   - **Lista verticale** (`dialogs.py`): Design classico con lista progetti / Classic design with project list
   - **Tabella a colonne** (`dialogs_table.py`): Vista moderna con metadati in colonne e tab integrati / Modern view with metadata in columns and integrated tabs

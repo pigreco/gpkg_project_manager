@@ -537,16 +537,14 @@ Time elapsed: {4:.1f} seconds</translation>
 
 Questa operazione rigenererà i metadati per tutti i progetti:
 • Data creazione e modifica
-• Dimensione del progetto
-• Conteggio layer (vettoriali/raster)
+• EPSG del progetto
 
 Vuoi continuare?</source>
         <translation>Projects found: {0}
 
 This operation will regenerate metadata for all projects:
 • Creation and modification date
-• Project size
-• Layer count (vector/raster)
+• Project EPSG
 
 Do you want to continue?</translation>
     </message>
@@ -1020,6 +1018,68 @@ Load the layer into the project first.</translation>
 {}</source>
         <translation>Error deleting style:
 {}</translation>
+    </message>
+    <message>
+        <source>🔗 Relazioni</source>
+        <translation>🔗 Relations</translation>
+    </message>
+    <message>
+        <source>  🔗  Relazioni tra tabelle</source>
+        <translation>  🔗  Table Relations</translation>
+    </message>
+    <message>
+        <source>Tabella Origine</source>
+        <translation>Source Table</translation>
+    </message>
+    <message>
+        <source>Campo Origine</source>
+        <translation>Source Field</translation>
+    </message>
+    <message>
+        <source>Tabella Destinazione</source>
+        <translation>Target Table</translation>
+    </message>
+    <message>
+        <source>Campo Destinazione</source>
+        <translation>Target Field</translation>
+    </message>
+    <message>
+        <source>Tipo</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Relazioni trovate: 0</source>
+        <translation>Relations found: 0</translation>
+    </message>
+    <message>
+        <source>Relazioni trovate: {}</source>
+        <translation>Relations found: {}</translation>
+    </message>
+    <message>
+        <source>ℹ️ Seleziona un GeoPackage dal tab Progetti</source>
+        <translation>ℹ️ Select a GeoPackage from Projects tab</translation>
+    </message>
+    <message>
+        <source>ℹ️ Nessuna relazione trovata</source>
+        <translation>ℹ️ No relations found</translation>
+    </message>
+    <message>
+        <source>Errore nel caricamento delle relazioni:
+{}</source>
+        <translation>Error loading relations:
+{}</translation>
+    </message>
+    <message>
+        <source>Nome Relazione</source>
+        <translation>Relation Name</translation>
+    </message>
+    <message>
+        <source>ℹ️ Nessuna relazione trovata (Progetto: {})</source>
+        <translation>ℹ️ No relations found (Project: {})</translation>
+    </message>
+    <message>
+        <source>ℹ️ Nessuna relazione trovata (Nessun progetto selezionato)</source>
+        <translation>ℹ️ No relations found (No project selected)</translation>
     </message>
 </context>
 </TS>

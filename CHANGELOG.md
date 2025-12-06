@@ -7,6 +7,49 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.6.0] - 2025-12-06
+
+### 🎉 Aggiunto
+- **Tab "🔗 Relazioni"**: Nuova tab dedicata alla visualizzazione delle relazioni tra tabelle
+  - Visualizzazione **Foreign Keys** (FK) definite a livello database
+  - Visualizzazione **GeoPackage Extension** (relazioni definite tramite tabella `gpkgext_relations`)
+  - **Visualizzazione Relazioni di Progetto QGIS**: Mostra le relazioni definite nel progetto QGIS selezionato
+    - Estrazione automatica delle relazioni dal progetto QGIS salvato nel GeoPackage
+    - Supporto decodifica HEX per progetti salvati come stringa esadecimale
+    - Estrazione intelligente dei nomi tabelle dai layer ID (da attributo `source` in `<layer-tree-layer>`)
+    - Mostra **tipo di relazione**: Association (relazione debole) o Composition (relazione forte con cascata)
+    - Mostra **cardinalità**: 1:N (one-to-many)
+    - Filtro anti-duplicati automatico per relazioni ripetute
+  - Tabella con 6 colonne: Nome Relazione, Tabella Origine, Campo Origine, Tabella Destinazione, Campo Destinazione, Tipo
+  - Contatore dettagliato: mostra numero totale relazioni e dettaglio per tipo (FK, GPKG, Progetto)
+  - Aggiornamento automatico quando si seleziona un progetto
+  - Pulsante "⟳ Aggiorna" per ricaricare manualmente le relazioni
+- **Popolamento automatico descrizione**: Il campo descrizione si popola automaticamente quando si seleziona un progetto
+  - Consente di visualizzare e modificare la descrizione del progetto selezionato
+  - Sincronizzazione tramite signal `itemSelectionChanged` della tabella progetti
+
+### 🔧 Migliorato
+- **Tabella Progetti**: Semplificata rimuovendo colonne non essenziali
+  - Rimosse colonne "Layer" e "Dimensioni" per una vista più pulita
+  - Rimaste solo le colonne essenziali: Nome Progetto, Data Creazione, Data Modifica, EPSG, Opzioni
+- **Tabella Metadati**: Semplificata la struttura della tabella `qgis_projects_metadata`
+  - Rimossi campi non utilizzati: `size_bytes`, `layer_count`, `vector_count`, `raster_count`, `table_count`
+  - Campi attuali: `project_name`, `created_date`, `modified_date`, `crs_epsg`, `description`
+  - Database più leggero e manutenzione più semplice
+- **Dialog "Aggiorna Metadati"**: Aggiornato per riflettere i cambiamenti
+  - Messaggio semplificato che mostra solo le operazioni effettive (date e EPSG)
+  - Rimossi riferimenti a layer e dimensioni
+
+### 🐛 Corretto
+- **Decompressione progetti**: Risolto problema con progetti salvati come stringa HEX nel database
+  - Aggiunta rilevazione e decodifica automatica HEX prima della decompressione
+  - Supporto per tutti i formati: ZIP (QGZ), GZIP, e plain text (QGS)
+- **Estrazione nomi tabelle**: Risolto problema di estrazione nomi tabelle dai layer ID
+  - Implementato metodo robusto che cerca in `<layer-tree-layer>` prima di `<maplayer>`
+  - Pattern regex migliorato per gestire attributi in ordine variabile
+
+---
+
 ## [3.5.0] - 2025-12-05
 
 ### 🎉 Aggiunto

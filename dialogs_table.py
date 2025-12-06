@@ -745,13 +745,11 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         # TABELLA invece di LISTA
         self.tabella_progetti = QTableWidget()
-        self.tabella_progetti.setColumnCount(7)  # 6 colonne dati + 1 colonna opzioni
+        self.tabella_progetti.setColumnCount(5)  # 4 colonne dati + 1 colonna opzioni
         self.tabella_progetti.setHorizontalHeaderLabels([
             self.tr("Nome Progetto"),
             self.tr("Data Creazione"),
             self.tr("Data Modifica"),
-            self.tr("Dimensione"),
-            self.tr("Layer"),
             self.tr("EPSG"),
             self.tr("⚙️")  # Colonna opzioni
         ])
@@ -773,16 +771,17 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         # Imposta il ridimensionamento delle colonne
         header = self.tabella_progetti.horizontalHeader()
         header.setSectionResizeMode(0, Stretch)  # Nome Progetto - si espande automaticamente
-        # Colonne 1-5 ridimensionabili manualmente dall'utente
-        for i in range(1, 6):
+        # Colonne 1-3 ridimensionabili manualmente dall'utente
+        for i in range(1, 4):
             header.setSectionResizeMode(i, Interactive)
-        # Colonna 6 (opzioni) ha larghezza fissa non ridimensionabile
-        self.tabella_progetti.setColumnWidth(6, 40)  # Larghezza fissa 40px
-        header.setSectionResizeMode(6, Fixed)
+        # Colonna 4 (opzioni) ha larghezza fissa non ridimensionabile
+        self.tabella_progetti.setColumnWidth(4, 40)  # Larghezza fissa 40px
+        header.setSectionResizeMode(4, Fixed)
         
         # Eventi
         self.tabella_progetti.cellDoubleClicked.connect(self.carica_progetto_da_tabella)
-        
+        self.tabella_progetti.itemSelectionChanged.connect(self.on_project_selection_changed)
+
         progetti_layout.addWidget(self.tabella_progetti)
 
         tab_progetti_layout.addWidget(progetti_group)
@@ -894,11 +893,79 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         tab_stili_layout.addLayout(footer_layout)
         tab_stili_layout.addStretch()
 
-        # Aggiungi il tab
+        # Aggiungi il tab stili
         self.tab_widget.addTab(tab_stili, self.tr("🎨 Stili"))
 
-        # Connetti il cambio di tab per ricaricare gli stili quando si apre il tab
+        # Tab 3: Relazioni
+        self.setup_relations_tab()
+
+        # Connetti il cambio di tab per ricaricare quando si cambia tab
         self.tab_widget.currentChanged.connect(self.on_tab_changed)
+
+    def setup_relations_tab(self):
+        """Configura il tab per visualizzare le relazioni tra tabelle."""
+        # Crea il widget per il tab relazioni
+        tab_relazioni = QWidget()
+        tab_relazioni_layout = QVBoxLayout(tab_relazioni)
+        tab_relazioni_layout.setSpacing(15)
+        tab_relazioni_layout.setContentsMargins(0, 10, 0, 0)
+
+        # Tabella relazioni
+        relations_group = QGroupBox(self.tr("  🔗  Relazioni tra tabelle"))
+        relations_layout = QVBoxLayout(relations_group)
+
+        self.table_relations = QTableWidget()
+        self.table_relations.setColumnCount(6)
+        self.table_relations.setHorizontalHeaderLabels([
+            self.tr("Nome Relazione"),
+            self.tr("Tabella Origine"),
+            self.tr("Campo Origine"),
+            self.tr("Tabella Destinazione"),
+            self.tr("Campo Destinazione"),
+            self.tr("Tipo")
+        ])
+
+        self.table_relations.setAlternatingRowColors(True)
+        self.table_relations.setSelectionMode(SingleSelection)
+        self.table_relations.setSelectionBehavior(SelectRows)
+        self.table_relations.setEditTriggers(NoEditTriggers)
+        self.table_relations.verticalHeader().setVisible(False)
+        self.table_relations.setSortingEnabled(True)
+
+        # Ridimensionamento colonne
+        header = self.table_relations.horizontalHeader()
+        for i in range(6):
+            header.setSectionResizeMode(i, Interactive)
+
+        relations_layout.addWidget(self.table_relations)
+        tab_relazioni_layout.addWidget(relations_group)
+
+        # Footer
+        footer_layout = QHBoxLayout()
+
+        self.relations_count_label = QLabel(self.tr("Relazioni trovate: 0"))
+        self.relations_count_label.setObjectName("tipLabel")
+        footer_layout.addWidget(self.relations_count_label)
+
+        footer_layout.addSpacing(20)
+
+        # Info GeoPackage per relazioni
+        self.relations_info_label = QLabel(self.tr("📦 --"))
+        self.relations_info_label.setObjectName("tipLabel")
+        footer_layout.addWidget(self.relations_info_label)
+
+        footer_layout.addStretch()
+
+        btn_refresh_relations = QPushButton(self.tr("⟳ Aggiorna"))
+        btn_refresh_relations.setFixedWidth(120)
+        btn_refresh_relations.clicked.connect(self.load_relations)
+        footer_layout.addWidget(btn_refresh_relations)
+
+        tab_relazioni_layout.addLayout(footer_layout)
+        tab_relazioni_layout.addStretch()
+
+        # Aggiungi il tab relazioni
+        self.tab_widget.addTab(tab_relazioni, self.tr("🔗 Relazioni"))
 
     def on_tab_changed(self, index):
         """Gestisce il cambio di tab."""
@@ -910,6 +977,14 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
                 self.styles_info_label.setText(self.tr("📦 {}").format(gpkg_name))
             else:
                 self.styles_info_label.setText(self.tr("📦 --"))
+        elif index == 2:  # Tab Relazioni
+            self.load_relations()
+            # Aggiorna info GeoPackage nel tab relazioni
+            if self.gpkg_path:
+                gpkg_name = os.path.basename(self.gpkg_path)
+                self.relations_info_label.setText(self.tr("📦 {}").format(gpkg_name))
+            else:
+                self.relations_info_label.setText(self.tr("📦 --"))
 
     def load_styles(self):
         """Carica gli stili dal GeoPackage corrente."""
@@ -962,6 +1037,332 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         except Exception as e:
             self.mostra_errore(self.tr("Errore"), self.tr("Errore nel caricamento degli stili:\n{}").format(str(e)))
+
+    def load_relations(self):
+        """Carica le relazioni dal GeoPackage corrente."""
+        self.table_relations.setRowCount(0)
+
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.relations_count_label.setText(self.tr("ℹ️ Seleziona un GeoPackage dal tab Progetti"))
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            relations = []
+            fk_count = 0
+            gpkg_count = 0
+            project_count = 0
+
+            # 1. Cerca Foreign Keys
+            # Ottieni lista delle tabelle
+            cursor.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name NOT LIKE 'sqlite_%'
+                AND name NOT LIKE 'gpkg_%' AND name NOT LIKE 'rtree_%'
+                ORDER BY name
+            """)
+            tables = [row[0] for row in cursor.fetchall()]
+
+            # Per ogni tabella, cerca le foreign keys
+            for table_name in tables:
+                cursor.execute(f"PRAGMA foreign_key_list('{table_name}')")
+                fks = cursor.fetchall()
+
+                for fk in fks:
+                    # fk: (id, seq, table, from, to, on_update, on_delete, match)
+                    relations.append({
+                        'name': f"fk_{table_name}_{fk[2]}",  # Auto-generated name
+                        'from_table': table_name,
+                        'from_field': fk[3],  # from
+                        'to_table': fk[2],    # table
+                        'to_field': fk[4],    # to
+                        'type': 'Foreign Key'
+                    })
+                    fk_count += 1
+
+            # 2. Cerca tabella gpkgext_relations (estensione GeoPackage)
+            cursor.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='gpkgext_relations'
+            """)
+
+            if cursor.fetchone():
+                cursor.execute("""
+                    SELECT
+                        base_table_name,
+                        base_primary_column,
+                        related_table_name,
+                        related_primary_column,
+                        relation_name
+                    FROM gpkgext_relations
+                """)
+
+                for row in cursor.fetchall():
+                    relations.append({
+                        'name': row[4] if row[4] else 'N/A',  # relation_name
+                        'from_table': row[0],
+                        'from_field': row[1],
+                        'to_table': row[2],
+                        'to_field': row[3],
+                        'type': 'GeoPackage Extension'
+                    })
+                    gpkg_count += 1
+
+            # 3. Cerca relazioni definite nel progetto QGIS selezionato
+            selected_rows = self.tabella_progetti.selectionModel().selectedRows()
+            selected_project_name = None
+            if selected_rows:
+                row = selected_rows[0].row()
+                item = self.tabella_progetti.item(row, 0)
+                if item:
+                    nome_progetto = item.data(UserRole)
+                    selected_project_name = nome_progetto
+
+                    # Leggi il contenuto del progetto
+                    cursor.execute("SELECT content FROM qgis_projects WHERE name = ?", (nome_progetto,))
+                    result = cursor.fetchone()
+
+                    if result and result[0]:
+                        try:
+                            import re
+                            import gzip
+                            import zipfile
+                            from io import BytesIO
+
+                            # Ottieni il contenuto del progetto
+                            content = result[0]
+                            qgs_content = None
+
+                            # 0. Decodifica HEX se necessario
+                            # Il contenuto potrebbe essere salvato come stringa hex
+                            if isinstance(content, str) and len(content) > 0:
+                                # Verifica se sembra essere hex (tutti caratteri 0-9a-f)
+                                if all(c in '0123456789abcdefABCDEF' for c in content[:100]):
+                                    try:
+                                        content = bytes.fromhex(content)
+                                    except:
+                                        pass
+
+                            # Prova diversi metodi di decompressione
+                            # 1. Prova come QGZ (ZIP)
+                            try:
+                                if isinstance(content, str):
+                                    content = content.encode('latin1')
+
+                                with zipfile.ZipFile(BytesIO(content)) as zf:
+                                    for name in zf.namelist():
+                                        if name.endswith('.qgs'):
+                                            qgs_content = zf.read(name).decode('utf-8')
+                                            break
+                            except:
+                                pass
+
+                            # 2. Prova GZIP
+                            if not qgs_content:
+                                try:
+                                    if isinstance(content, str):
+                                        content = content.encode('latin1')
+                                    decompressed = gzip.decompress(content)
+                                    qgs_content = decompressed.decode('utf-8')
+                                except:
+                                    pass
+
+                            # 3. Usa direttamente come stringa
+                            if not qgs_content:
+                                try:
+                                    if isinstance(content, bytes):
+                                        qgs_content = content.decode('utf-8')
+                                    else:
+                                        qgs_content = content
+                                except:
+                                    pass
+
+                            if qgs_content and '<relations>' in qgs_content:
+                                # Cerca relazioni nel XML
+                                relation_pattern = r'<relation[^>]+id="([^"]+)"[^>]+name="([^"]+)"[^>]*>'
+                                matches = list(re.finditer(relation_pattern, qgs_content))
+
+                                # Set per tracciare relazioni già processate (evita duplicati)
+                                processed_relations = set()
+
+                                for match in matches:
+                                    rel_id = match.group(1)
+                                    rel_name = match.group(2)
+
+                                    # Salta se già processata
+                                    if rel_id in processed_relations:
+                                        continue
+
+                                    processed_relations.add(rel_id)
+
+                                    # Cerca i dettagli della relazione nel blocco completo
+                                    start = match.start()
+                                    end = qgs_content.find('</relation>', start)
+                                    if end > 0:
+                                        relation_block = qgs_content[start:end+11]
+
+                                        # Estrai tabella e campi
+                                        ref_layer_match = re.search(r'referencingLayer="([^"]+)"', relation_block)
+                                        refed_layer_match = re.search(r'referencedLayer="([^"]+)"', relation_block)
+
+                                        # Estrai i nomi dei campi
+                                        fieldref_match = re.search(r'<fieldRef[^>]+referencingField="([^"]+)"[^>]+referencedField="([^"]+)"', relation_block)
+
+                                        # Estrai strength (Association o Composition)
+                                        strength_match = re.search(r'strength="([^"]+)"', relation_block)
+                                        strength = strength_match.group(1) if strength_match else "Association"
+
+                                        # Estrai cardinalità (se presente, altrimenti default 1:N)
+                                        # In QGIS le relazioni sono tipicamente 1:N
+                                        cardinality = "1:N"
+
+                                        if ref_layer_match and refed_layer_match and fieldref_match:
+                                            # Cerca il nome della tabella dal layer ID
+                                            ref_layer_id = ref_layer_match.group(1)
+                                            refed_layer_id = refed_layer_match.group(1)
+
+                                            # Cerca i nomi delle tabelle
+                                            ref_table = self._extract_table_name_from_layer(qgs_content, ref_layer_id)
+                                            refed_table = self._extract_table_name_from_layer(qgs_content, refed_layer_id)
+
+                                            if ref_table and refed_table:
+                                                # Crea descrizione tipo completa
+                                                type_desc = f"QGIS Project ({cardinality}, {strength})"
+                                                relations.append({
+                                                    'name': rel_name,
+                                                    'from_table': ref_table,
+                                                    'from_field': fieldref_match.group(1),
+                                                    'to_table': refed_table,
+                                                    'to_field': fieldref_match.group(2),
+                                                    'type': type_desc
+                                                })
+                                                project_count += 1
+                        except Exception as e:
+                            pass
+
+            conn.close()
+
+            if not relations:
+                if selected_project_name:
+                    self.relations_count_label.setText(self.tr("ℹ️ Nessuna relazione trovata (Progetto: {})").format(selected_project_name))
+                else:
+                    self.relations_count_label.setText(self.tr("ℹ️ Nessuna relazione trovata (Nessun progetto selezionato)"))
+                return
+
+            # Popola la tabella
+            for relation in relations:
+                self.add_relation_row(relation)
+
+            # Mostra il conteggio dettagliato
+            count_parts = []
+            if fk_count > 0:
+                count_parts.append(f"FK: {fk_count}")
+            if gpkg_count > 0:
+                count_parts.append(f"GPKG: {gpkg_count}")
+            if project_count > 0:
+                count_parts.append(f"Progetto: {project_count}")
+
+            if selected_project_name:
+                status = f"Relazioni: {len(relations)} ({', '.join(count_parts)}) - Progetto: {selected_project_name}"
+            else:
+                status = f"Relazioni: {len(relations)} ({', '.join(count_parts)})"
+
+            self.relations_count_label.setText(status)
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nel caricamento delle relazioni:\n{}").format(str(e)))
+
+    def _extract_table_name_from_layer(self, qgs_content, layer_id):
+        """Estrae il nome della tabella dal layer ID nel progetto QGIS."""
+        import re
+
+        # Cerca la stringa esatta dell'ID
+        id_string = f'id="{layer_id}"'
+        id_pos = qgs_content.find(id_string)
+
+        if id_pos == -1:
+            return None
+
+        # Estrai il contesto (circa 500 caratteri dopo l'ID per includere l'intero tag)
+        context_start = max(0, id_pos - 100)
+        context_end = min(len(qgs_content), id_pos + 500)
+        context = qgs_content[context_start:context_end]
+
+        # METODO 1: Cerca nel tag <layer-tree-layer> che contiene l'attributo source
+        # Formato: <layer-tree-layer ... id="..." ... source="path|layername=nome_tabella" ...>
+        source_match = re.search(r'source="[^"]*\|layername=([^"]+)"', context)
+        if source_match:
+            table_name = source_match.group(1)
+            return table_name
+
+        # METODO 2: Cerca nel tag <maplayer>
+        # Cerca indietro per trovare il tag <maplayer più vicino
+        maplayer_start = qgs_content.rfind('<maplayer', 0, id_pos)
+        if maplayer_start == -1:
+            maplayer_start = qgs_content.rfind('<mapLayer', 0, id_pos)
+
+        if maplayer_start != -1:
+            # Cerca avanti per trovare il tag </maplayer> che chiude questo layer
+            maplayer_end = qgs_content.find('</maplayer>', id_pos)
+            if maplayer_end == -1:
+                maplayer_end = qgs_content.find('</mapLayer>', id_pos)
+
+            if maplayer_end != -1:
+                # Estrai il blocco completo del layer
+                layer_block = qgs_content[maplayer_start:maplayer_end+11]
+
+                # Cerca il datasource nel blocco del layer
+                datasource_match = re.search(r'<datasource>([^<]+)</datasource>', layer_block)
+
+                if datasource_match:
+                    datasource = datasource_match.group(1)
+
+                    # Estrai il nome della tabella dal datasource
+                    # Formato: dbname='path' table="nome_tabella" ...
+                    table_match = re.search(r'table="([^"]+)"', datasource)
+                    if table_match:
+                        table_name = table_match.group(1)
+                        return table_name
+
+                    # Formato alternativo: layername='nome_tabella'
+                    table_match = re.search(r"layername='([^']+)'", datasource)
+                    if table_match:
+                        table_name = table_match.group(1)
+                        return table_name
+
+        return None
+
+    def add_relation_row(self, relation):
+        """Aggiunge una riga alla tabella relazioni."""
+        row_position = self.table_relations.rowCount()
+        self.table_relations.insertRow(row_position)
+
+        # Colonna 0: Nome Relazione
+        item_name = QTableWidgetItem(f"  🔗  {relation.get('name', 'N/A')}")
+        self.table_relations.setItem(row_position, 0, item_name)
+
+        # Colonna 1: Tabella Origine
+        item_from_table = QTableWidgetItem(f"  📊  {relation['from_table']}")
+        self.table_relations.setItem(row_position, 1, item_from_table)
+
+        # Colonna 2: Campo Origine
+        item_from_field = QTableWidgetItem(relation['from_field'])
+        self.table_relations.setItem(row_position, 2, item_from_field)
+
+        # Colonna 3: Tabella Destinazione
+        item_to_table = QTableWidgetItem(f"  📊  {relation['to_table']}")
+        self.table_relations.setItem(row_position, 3, item_to_table)
+
+        # Colonna 4: Campo Destinazione
+        item_to_field = QTableWidgetItem(relation['to_field'] if relation['to_field'] else 'N/A')
+        self.table_relations.setItem(row_position, 4, item_to_field)
+
+        # Colonna 5: Tipo
+        item_type = QTableWidgetItem(relation['type'])
+        item_type.setTextAlignment(AlignCenter | AlignVCenter)
+        self.table_relations.setItem(row_position, 5, item_type)
 
     def add_style_row(self, row_data):
         """Aggiunge una riga alla tabella stili."""
@@ -1325,11 +1726,6 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
                         p.name,
                         m.created_date,
                         m.modified_date,
-                        m.size_bytes,
-                        m.layer_count,
-                        m.vector_count,
-                        m.raster_count,
-                        m.table_count,
                         m.crs_epsg,
                         m.description
                     FROM qgis_projects p
@@ -1352,9 +1748,9 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         """Aggiunge una riga alla tabella progetti.
 
         Args:
-            dati: tuple (nome, data_creazione, data_modifica, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description)
+            dati: tuple (nome, data_creazione, data_modifica, crs_epsg, description)
         """
-        nome, created_date, modified_date, size_bytes, layer_count, vector_count, raster_count, table_count, crs_epsg, description = dati
+        nome, created_date, modified_date, crs_epsg, description = dati
         
         row_position = self.tabella_progetti.rowCount()
         self.tabella_progetti.insertRow(row_position)
@@ -1415,21 +1811,6 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
             except:
                 tooltip_parts.append(f"{self.tr('Modificato')}: {modified_date}")
 
-        if size_bytes:
-            if size_bytes < 1024:
-                size_str = f"{size_bytes} B"
-            elif size_bytes < 1024 * 1024:
-                size_str = f"{size_bytes / 1024:.1f} KB"
-            else:
-                size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-            tooltip_parts.append(f"{self.tr('Dimensione')}: {size_str}")
-
-        if layer_count:
-            v = vector_count if vector_count else 0
-            r = raster_count if raster_count else 0
-            t = table_count if table_count else 0
-            tooltip_parts.append(f"{self.tr('Layer')}: {layer_count} (V:{v} R:{r} T:{t})")
-
         if crs_epsg:
             tooltip_parts.append(f"EPSG: {crs_epsg}")
 
@@ -1462,48 +1843,14 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         item_modified = QTableWidgetItem(data_formattata)
         item_modified.setTextAlignment(AlignCenter | AlignVCenter)
         self.tabella_progetti.setItem(row_position, 2, item_modified)
-        
-        # Colonna 3: Dimensione
-        if size_bytes:
-            if size_bytes < 1024:
-                size_str = f"{size_bytes} B"
-            elif size_bytes < 1024 * 1024:
-                size_str = f"{size_bytes / 1024:.1f} KB"
-            else:
-                size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-        else:
-            size_str = "N/A"
-        item_size = QTableWidgetItem(size_str)
-        item_size.setTextAlignment(AlignCenter | AlignVCenter)
-        self.tabella_progetti.setItem(row_position, 3, item_size)
-        
-        # Colonna 4: Layer (dettaglio: vettoriali, raster, tabelle)
-        if layer_count:
-            v = vector_count if vector_count else 0
-            r = raster_count if raster_count else 0
-            t = table_count if table_count else 0
-            # Formato: "V:3 R:2 T:1" o solo numeri non zero
-            parts = []
-            if v > 0:
-                parts.append(f"V:{v}")
-            if r > 0:
-                parts.append(f"R:{r}")
-            if t > 0:
-                parts.append(f"T:{t}")
-            layer_str = " ".join(parts) if parts else str(layer_count)
-        else:
-            layer_str = "N/A"
-        item_layers = QTableWidgetItem(layer_str)
-        item_layers.setTextAlignment(AlignCenter | AlignVCenter)
-        self.tabella_progetti.setItem(row_position, 4, item_layers)
-        
-        # Colonna 5: EPSG
+
+        # Colonna 3: EPSG
         epsg_str = crs_epsg if crs_epsg else "N/A"
         item_epsg = QTableWidgetItem(epsg_str)
         item_epsg.setTextAlignment(AlignCenter | AlignVCenter)
-        self.tabella_progetti.setItem(row_position, 5, item_epsg)
-        
-        # Colonna 6: Pulsante Opzioni
+        self.tabella_progetti.setItem(row_position, 3, item_epsg)
+
+        # Colonna 4: Pulsante Opzioni
         btn_opzioni = QToolButton()
         btn_opzioni.setText("⋮")
         btn_opzioni.setPopupMode(InstantPopup)
@@ -1528,8 +1875,8 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         menu_opzioni.addAction(self.tr("🗑️  Elimina"), lambda n=nome: self.elimina_progetto_per_nome(n))
         
         btn_opzioni.setMenu(menu_opzioni)
-        
-        self.tabella_progetti.setCellWidget(row_position, 6, btn_opzioni)
+
+        self.tabella_progetti.setCellWidget(row_position, 4, btn_opzioni)
 
     def aggiorna_info_gpkg(self):
         """Aggiorna le informazioni del GeoPackage (dimensione e numero progetti)."""
@@ -1587,6 +1934,43 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         if item:
             nome_progetto = item.data(UserRole)
             self.carica_progetto_per_nome(nome_progetto)
+
+    def on_project_selection_changed(self):
+        """Aggiorna il campo descrizione quando si seleziona un progetto."""
+        selected_items = self.tabella_progetti.selectedItems()
+        if not selected_items:
+            self.txt_descrizione.clear()
+            self.txt_descrizione.setPlaceholderText(self.tr("Descrizione opzionale del progetto..."))
+            return
+
+        # Ottieni il nome del progetto selezionato
+        row = selected_items[0].row()
+        item = self.tabella_progetti.item(row, 0)
+        if not item:
+            return
+
+        nome_progetto = item.data(UserRole)
+
+        # Leggi la descrizione dal database
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT description
+                FROM qgis_projects_metadata
+                WHERE project_name = ?
+            """, (nome_progetto,))
+            result = cursor.fetchone()
+            conn.close()
+
+            if result and result[0]:
+                self.txt_descrizione.setText(result[0])
+            else:
+                self.txt_descrizione.clear()
+                self.txt_descrizione.setPlaceholderText(self.tr("Nessuna descrizione per questo progetto"))
+        except Exception as e:
+            self.txt_descrizione.clear()
+            self.txt_descrizione.setPlaceholderText(self.tr("Errore nel caricamento della descrizione"))
 
     def mostra_menu_contestuale_tabella(self, position):
         """Mostra il menu contestuale sulla tabella."""
