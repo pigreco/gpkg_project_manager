@@ -46,3 +46,7 @@ scripts/
 *.mp4
 *.avi
 *.mov
+
+# Test files
+esempio_trigger.sql
+test_triggers.py

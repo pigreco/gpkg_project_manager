@@ -623,6 +623,48 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
         """)
         info_layout.addWidget(self.gpkg_info_label)
 
+        # Indicatore Protezione GeoPackage
+        self.protezione_label = QLabel(self.tr("  •  🔒 Protezione: --"))
+        self.protezione_label.setObjectName("tipLabel")
+        self.protezione_label.setStyleSheet("""
+            QLabel {
+                color: #6b7280;
+                font-size: 11px;
+                padding: 5px 5px;
+            }
+        """)
+        info_layout.addWidget(self.protezione_label)
+
+        # Pulsante menu protezione
+        self.btn_protezione_menu = QPushButton("⚙️")
+        self.btn_protezione_menu.setFixedSize(40, 28)
+        self.btn_protezione_menu.setToolTip(self.tr("Gestisci protezione GeoPackage"))
+        self.btn_protezione_menu.setStyleSheet("""
+            QPushButton {
+                font-size: 18px;
+                padding: 3px;
+                border: 1px solid #d1d5db;
+                border-radius: 4px;
+                background-color: #f9fafb;
+            }
+            QPushButton:hover {
+                background-color: #e5e7eb;
+                border-color: #9ca3af;
+            }
+            QPushButton:pressed {
+                background-color: #d1d5db;
+            }
+        """)
+
+        # Menu protezione
+        menu_protezione = QMenu(self)
+        menu_protezione.addAction(self.tr("ℹ️  Stato Protezione"), self.verifica_stato_protezione)
+        menu_protezione.addAction(self.tr("🔓 Disabilita Temporanea"), self.disabilita_protezione_temporanea)
+        menu_protezione.addAction(self.tr("🔐 Ripristina Protezione"), self.ripristina_protezione)
+        self.btn_protezione_menu.setMenu(menu_protezione)
+
+        info_layout.addWidget(self.btn_protezione_menu)
+
         info_layout.addStretch()
 
         # Checkbox per aggiungere versione al clone
@@ -803,7 +845,7 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
 
         footer_layout = QHBoxLayout()
 
-        version_label = QLabel(self.tr("v3.5.0 • Qt5/Qt6 Compatible • Table View"))
+        version_label = QLabel(self.tr("v3.7.1 • Qt5/Qt6 Compatible • Table View • Trigger Protection"))
         version_label.setObjectName("tipLabel")
         footer_layout.addWidget(version_label)
 
@@ -1909,6 +1951,55 @@ class GeoPackageProjectManagerDialog(GeoPackageProjectManagerDialogBase):
             )
         except Exception as e:
             self.gpkg_info_label.setText(self.tr("ℹ️ Info: Errore lettura"))
+
+        # Aggiorna anche lo stato protezione
+        self.aggiorna_stato_protezione()
+
+    def aggiorna_stato_protezione(self):
+        """Aggiorna l'indicatore di stato della protezione GeoPackage."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.protezione_label.setText(self.tr("  •  🔒 Protezione: --"))
+            self.protezione_label.setStyleSheet("""
+                QLabel { color: #6b7280; font-size: 11px; padding: 5px 5px; }
+            """)
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            # Verifica esistenza trigger
+            cursor.execute("""
+                SELECT COUNT(*) FROM sqlite_master
+                WHERE type='trigger'
+                AND name IN ('prevent_project_update', 'prevent_project_delete')
+            """)
+            num_triggers = cursor.fetchone()[0]
+
+            conn.close()
+
+            # Aggiorna label in base allo stato
+            if num_triggers == 2:
+                self.protezione_label.setText(self.tr("  •  🔒 Protezione: ATTIVA ✅"))
+                self.protezione_label.setStyleSheet("""
+                    QLabel { color: #22c55e; font-size: 11px; padding: 5px 5px; font-weight: bold; }
+                """)
+            elif num_triggers == 1:
+                self.protezione_label.setText(self.tr("  •  ⚠️ Protezione: PARZIALE"))
+                self.protezione_label.setStyleSheet("""
+                    QLabel { color: #f97316; font-size: 11px; padding: 5px 5px; font-weight: bold; }
+                """)
+            else:
+                self.protezione_label.setText(self.tr("  •  🔓 Protezione: DISATTIVATA"))
+                self.protezione_label.setStyleSheet("""
+                    QLabel { color: #ef4444; font-size: 11px; padding: 5px 5px; font-weight: bold; }
+                """)
+
+        except Exception as e:
+            self.protezione_label.setText(self.tr("  •  🔒 Protezione: ?"))
+            self.protezione_label.setStyleSheet("""
+                QLabel { color: #6b7280; font-size: 11px; padding: 5px 5px; }
+            """)
 
     def get_progetto_selezionato(self):
         """Restituisce il nome del progetto selezionato nella tabella."""

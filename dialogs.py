@@ -916,6 +916,9 @@ class GeoPackageProjectManagerDialog(QDialog):
             """)
 
             if cursor.fetchone():
+                # Crea i trigger di protezione quando si carica il GeoPackage
+                self.crea_trigger_protezione(conn)
+
                 cursor.execute("SELECT name FROM qgis_projects ORDER BY name")
                 for row in cursor.fetchall():
                     item = QListWidgetItem(f"  📋  {row[0]}")
@@ -1006,6 +1009,282 @@ class GeoPackageProjectManagerDialog(QDialog):
             conn.commit()
         except Exception as e:
             pass  # Tabella già esistente o errore non critico
+
+    def crea_trigger_protezione(self, conn):
+        """Crea trigger per proteggere i progetti da modifiche non autorizzate.
+
+        I trigger impediscono UPDATE e DELETE sulla tabella qgis_projects,
+        a meno che non ci sia un flag di bypass nella tabella di controllo.
+        """
+        try:
+            cursor = conn.cursor()
+
+            # Crea tabella di controllo per il bypass dei trigger
+            # Questa tabella viene usata temporaneamente durante operazioni autorizzate
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS qgis_projects_trigger_bypass (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    bypass_active INTEGER DEFAULT 0
+                )
+            """)
+
+            # Inserisci il record di controllo se non esiste
+            cursor.execute("""
+                INSERT OR IGNORE INTO qgis_projects_trigger_bypass (id, bypass_active)
+                VALUES (1, 0)
+            """)
+
+            # Trigger per impedire UPDATE sulla tabella qgis_projects
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prevent_project_update
+                BEFORE UPDATE ON qgis_projects
+                WHEN (SELECT bypass_active FROM qgis_projects_trigger_bypass WHERE id = 1) = 0
+                BEGIN
+                    SELECT RAISE(ABORT, '🔒 MODIFICA NON CONSENTITA - I progetti sono protetti da modifiche. Crea una nuova versione invece di sovrascrivere.');
+                END
+            """)
+
+            # Trigger per impedire DELETE sulla tabella qgis_projects
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prevent_project_delete
+                BEFORE DELETE ON qgis_projects
+                WHEN (SELECT bypass_active FROM qgis_projects_trigger_bypass WHERE id = 1) = 0
+                BEGIN
+                    SELECT RAISE(ABORT, '🔒 ELIMINAZIONE NON CONSENTITA - I progetti sono protetti da cancellazione.');
+                END
+            """)
+
+            conn.commit()
+        except Exception as e:
+            # Se i trigger già esistono o c'è un errore non critico, continua
+            pass
+
+    def abilita_bypass_trigger(self, conn):
+        """Abilita temporaneamente il bypass dei trigger di protezione."""
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE qgis_projects_trigger_bypass
+                SET bypass_active = 1
+                WHERE id = 1
+            """)
+            conn.commit()
+        except:
+            pass
+
+    def disabilita_bypass_trigger(self, conn):
+        """Disabilita il bypass dei trigger di protezione."""
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE qgis_projects_trigger_bypass
+                SET bypass_active = 0
+                WHERE id = 1
+            """)
+            conn.commit()
+        except:
+            pass
+
+    def rimuovi_trigger_protezione(self, conn):
+        """Rimuove i trigger di protezione (se necessario disabilitare completamente)."""
+        try:
+            cursor = conn.cursor()
+            cursor.execute("DROP TRIGGER IF EXISTS prevent_project_update")
+            cursor.execute("DROP TRIGGER IF EXISTS prevent_project_delete")
+            cursor.execute("DROP TABLE IF EXISTS qgis_projects_trigger_bypass")
+            conn.commit()
+        except:
+            pass
+
+    def verifica_stato_protezione(self):
+        """Mostra una finestra con lo stato della protezione trigger."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            cursor = conn.cursor()
+
+            # Verifica esistenza trigger
+            cursor.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='trigger'
+                AND name IN ('prevent_project_update', 'prevent_project_delete')
+            """)
+            triggers = cursor.fetchall()
+            trigger_names = [t[0] for t in triggers]
+
+            has_update = 'prevent_project_update' in trigger_names
+            has_delete = 'prevent_project_delete' in trigger_names
+
+            # Verifica stato bypass
+            bypass_status = None
+            try:
+                cursor.execute("SELECT bypass_active FROM qgis_projects_trigger_bypass WHERE id = 1")
+                result = cursor.fetchone()
+                if result:
+                    bypass_status = result[0]
+            except:
+                pass
+
+            conn.close()
+
+            # Costruisci messaggio
+            msg = QMessageBox(self)
+            msg.setWindowTitle(self.tr("🔒 Stato Protezione Trigger"))
+
+            if has_update and has_delete:
+                status_icon = "✅"
+                status_text = self.tr("ATTIVA")
+                status_color = "#22c55e"
+            elif has_update or has_delete:
+                status_icon = "⚠️"
+                status_text = self.tr("PARZIALE")
+                status_color = "#f97316"
+            else:
+                status_icon = "❌"
+                status_text = self.tr("DISATTIVATA")
+                status_color = "#ef4444"
+
+            info_html = f"""
+            <h3 style='color: {status_color};'>{status_icon} Protezione {status_text}</h3>
+            <p><b>GeoPackage:</b> {os.path.basename(self.gpkg_path)}</p>
+            <hr>
+            <p><b>Trigger Presenti:</b></p>
+            <ul>
+            <li>{'✅' if has_update else '❌'} prevent_project_update (blocca UPDATE)</li>
+            <li>{'✅' if has_delete else '❌'} prevent_project_delete (blocca DELETE)</li>
+            </ul>
+            """
+
+            if bypass_status is not None:
+                bypass_text = "🔓 DISATTIVATA" if bypass_status == 1 else "🔒 ATTIVA"
+                bypass_color = "#f97316" if bypass_status == 1 else "#22c55e"
+                info_html += f"<p><b>Protezione corrente:</b> <span style='color: {bypass_color};'>{bypass_text}</span></p>"
+
+                if bypass_status == 1:
+                    info_html += "<p><b>⚠️ ATTENZIONE:</b> Il bypass è attivo! La protezione è temporaneamente disabilitata.</p>"
+
+            if has_update and has_delete:
+                info_html += """
+                <hr>
+                <p style='color: #6b7280; font-size: 11px;'>
+                ℹ️ I progetti sono protetti da modifiche esterne.<br>
+                Solo il plugin può modificare o eliminare progetti.
+                </p>
+                """
+
+            msg.setText(info_html)
+            msg.setIcon(MsgBoxInformation)
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setStyleSheet(MODERN_STYLE)
+            msg.exec()
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nella verifica dello stato:\n{}").format(str(e)))
+
+    def disabilita_protezione_temporanea(self):
+        """Disabilita temporaneamente i trigger di protezione."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
+            return
+
+        # Conferma azione
+        msg = QMessageBox(self)
+        msg.setIcon(MsgBoxQuestion)
+        msg.setWindowTitle(self.tr("🔓 Disabilita Protezione"))
+        msg.setText(
+            self.tr("⚠️ ATTENZIONE\n\n"
+                    "Questa operazione rimuoverà TEMPORANEAMENTE i trigger di protezione.\n\n"
+                    "Il GeoPackage sarà vulnerabile a modifiche esterne fino al ripristino.\n\n"
+                    "Usa questa funzione solo per operazioni di manutenzione avanzata.\n\n"
+                    "Vuoi continuare?")
+        )
+        msg.setStandardButtons(MsgBoxYes | MsgBoxNo)
+        msg.setDefaultButton(MsgBoxNo)
+        msg.setStyleSheet(MODERN_STYLE)
+
+        if msg.exec() != MsgBoxYes:
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+            self.rimuovi_trigger_protezione(conn)
+            conn.close()
+
+            # Aggiorna indicatore stato protezione
+            if hasattr(self, 'aggiorna_stato_protezione'):
+                self.aggiorna_stato_protezione()
+
+            self.mostra_info(
+                self.tr("Protezione Disabilitata"),
+                self.tr("✅ Trigger di protezione rimossi.\n\n"
+                        "⚠️ IMPORTANTE: Ricorda di ripristinare la protezione dopo le operazioni di manutenzione!")
+            )
+
+            iface.messageBar().pushMessage(
+                self.tr("⚠️ Protezione Disabilitata"),
+                self.tr("Il GeoPackage non è più protetto. Ripristina la protezione quando hai finito."),
+                level=Qgis.Warning,
+                duration=10
+            )
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nella disabilitazione:\n{}").format(str(e)))
+
+    def ripristina_protezione(self):
+        """Ripristina i trigger di protezione."""
+        if not self.gpkg_path or not os.path.exists(self.gpkg_path):
+            self.mostra_errore(self.tr("Attenzione"), self.tr("Seleziona prima un GeoPackage."))
+            return
+
+        try:
+            conn = sqlite3.connect(self.gpkg_path)
+
+            # Verifica se i trigger esistono già
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT COUNT(*) FROM sqlite_master
+                WHERE type='trigger'
+                AND name IN ('prevent_project_update', 'prevent_project_delete')
+            """)
+            existing_triggers = cursor.fetchone()[0]
+
+            if existing_triggers == 2:
+                # Trigger già presenti, assicurati solo che il bypass sia disabilitato
+                self.disabilita_bypass_trigger(conn)
+                conn.close()
+
+                self.mostra_info(
+                    self.tr("Protezione Attiva"),
+                    self.tr("✅ I trigger di protezione sono già presenti e attivi.\n\n"
+                            "Il GeoPackage è protetto da modifiche esterne.")
+                )
+            else:
+                # Ricrea i trigger
+                self.crea_trigger_protezione(conn)
+                conn.close()
+
+                self.mostra_info(
+                    self.tr("Protezione Ripristinata"),
+                    self.tr("✅ Trigger di protezione ricreati con successo!\n\n"
+                            "Il GeoPackage è ora protetto da modifiche esterne.")
+                )
+
+            # Aggiorna indicatore stato protezione
+            if hasattr(self, 'aggiorna_stato_protezione'):
+                self.aggiorna_stato_protezione()
+
+            iface.messageBar().pushMessage(
+                self.tr("🔒 Protezione Attiva"),
+                self.tr("Il GeoPackage è protetto da modifiche esterne."),
+                level=Qgis.Success,
+                duration=5
+            )
+
+        except Exception as e:
+            self.mostra_errore(self.tr("Errore"), self.tr("Errore nel ripristino:\n{}").format(str(e)))
 
     def estrai_metadati_progetto(self, content):
         """Estrae metadati automatici dal contenuto del progetto."""
@@ -1396,9 +1675,12 @@ class GeoPackageProjectManagerDialog(QDialog):
             ):
                 return
 
+        # Inizializza conn_bypass per gestione errori
+        conn_bypass = None
+
         try:
             project = QgsProject.instance()
-            
+
             # Estrai il CRS del progetto PRIMA del salvataggio
             project_crs = None
             try:
@@ -1409,10 +1691,26 @@ class GeoPackageProjectManagerDialog(QDialog):
                         project_crs = auth_id
             except:
                 pass
-            
+
+            # Se stiamo sovrascrivendo un progetto esistente, abilita il bypass dei trigger
+            if not is_new:
+                try:
+                    conn_bypass = sqlite3.connect(self.gpkg_path)
+                    self.abilita_bypass_trigger(conn_bypass)
+                except:
+                    pass
+
             uri = f"geopackage:{self.gpkg_path}?projectName={nome_progetto}"
 
             if project.write(uri):
+                # Disabilita il bypass dei trigger dopo il salvataggio
+                if conn_bypass:
+                    try:
+                        self.disabilita_bypass_trigger(conn_bypass)
+                        conn_bypass.close()
+                    except:
+                        pass
+
                 # Salva metadati del progetto
                 try:
                     conn = sqlite3.connect(self.gpkg_path)
@@ -1437,9 +1735,23 @@ class GeoPackageProjectManagerDialog(QDialog):
                     level=Qgis.Success, duration=3
                 )
             else:
+                # Disabilita il bypass in caso di errore
+                if conn_bypass:
+                    try:
+                        self.disabilita_bypass_trigger(conn_bypass)
+                        conn_bypass.close()
+                    except:
+                        pass
                 self.mostra_errore(self.tr("Errore"), self.tr("Impossibile salvare il progetto."))
 
         except Exception as e:
+            # Disabilita il bypass in caso di eccezione
+            if conn_bypass:
+                try:
+                    self.disabilita_bypass_trigger(conn_bypass)
+                    conn_bypass.close()
+                except:
+                    pass
             self.mostra_errore(self.tr("Errore"), self.tr("Errore durante il salvataggio:\n{}").format(str(e)))
 
     def carica_progetto(self, item=None):
@@ -1504,6 +1816,10 @@ class GeoPackageProjectManagerDialog(QDialog):
         try:
             conn = sqlite3.connect(self.gpkg_path)
             cursor = conn.cursor()
+
+            # Abilita bypass trigger per operazione autorizzata
+            self.abilita_bypass_trigger(conn)
+
             cursor.execute("DELETE FROM qgis_projects WHERE name = ?", (nome_progetto,))
 
             # Elimina anche i metadati
@@ -1513,12 +1829,22 @@ class GeoPackageProjectManagerDialog(QDialog):
                 pass  # Tabella potrebbe non esistere
 
             conn.commit()
+
+            # Disabilita bypass trigger
+            self.disabilita_bypass_trigger(conn)
+
             conn.close()
 
             self.mostra_info(self.tr("Successo"), self.tr("Progetto '%1' eliminato.").replace('%1', nome_progetto))
             self.aggiorna_lista_progetti()
 
         except Exception as e:
+            # In caso di errore, assicurati di disabilitare il bypass
+            try:
+                self.disabilita_bypass_trigger(conn)
+                conn.close()
+            except:
+                pass
             self.mostra_errore(self.tr("Errore"), self.tr("Errore durante l'eliminazione:\n{}").format(str(e)))
 
     def rinomina_progetto(self):
@@ -1548,6 +1874,10 @@ class GeoPackageProjectManagerDialog(QDialog):
         try:
             conn = sqlite3.connect(self.gpkg_path)
             cursor = conn.cursor()
+
+            # Abilita bypass trigger per operazione autorizzata
+            self.abilita_bypass_trigger(conn)
+
             cursor.execute(
                 "UPDATE qgis_projects SET name = ? WHERE name = ?",
                 (nuovo_nome, nome_progetto)
@@ -1563,12 +1893,22 @@ class GeoPackageProjectManagerDialog(QDialog):
                 pass  # Tabella potrebbe non esistere
 
             conn.commit()
+
+            # Disabilita bypass trigger
+            self.disabilita_bypass_trigger(conn)
+
             conn.close()
 
             self.mostra_info(self.tr("Successo"), self.tr("Progetto rinominato in '%1'.").replace('%1', nuovo_nome))
             self.aggiorna_lista_progetti()
 
         except Exception as e:
+            # In caso di errore, assicurati di disabilitare il bypass
+            try:
+                self.disabilita_bypass_trigger(conn)
+                conn.close()
+            except:
+                pass
             self.mostra_errore(self.tr("Errore"), self.tr("Errore durante la rinomina:\n{}").format(str(e)))
 
     def duplica_progetto(self):

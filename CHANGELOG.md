@@ -7,6 +7,104 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ---
 
+## [3.7.1] - 2025-12-20
+
+### 🔧 Migliorato
+- **Posizionamento menu protezione**: Rimosso sottomenu dal menu contestuale progetti (era fuorviante)
+- **Indicatore protezione visibile**: Aggiunto indicatore stato protezione sulla stessa riga di "ℹ️ Info"
+  - Mostra stato in tempo reale: `🔒 Protezione: ATTIVA ✅` / `🔓 DISATTIVATA` / `⚠️ PARZIALE`
+  - Colori distinti per ogni stato (verde/rosso/arancione)
+  - Pulsante ⚙️ per accesso rapido al menu gestione
+- **UX migliorata**: Menu protezione ora a livello GeoPackage (più chiaro e semanticamente corretto)
+- **Aggiornamento automatico**: Lo stato protezione si aggiorna dopo ogni operazione (disabilita/ripristina)
+
+### 📝 Chiarimenti
+- **Documentazione aggiornata**: Chiarito che la protezione vale per TUTTO il GeoPackage, non per singoli progetti
+- **FAQ estese**: Aggiunte risposte alle domande frequenti sull'ambito della protezione
+- **Design rationale**: Il menu a livello GeoPackage riflette correttamente che i trigger proteggono l'intera tabella
+
+---
+
+## [3.7.0] - 2025-12-20
+
+### 🎉 Aggiunto
+- **Sistema di Protezione con Trigger SQLite**: Implementato sistema completo di protezione automatica dei progetti
+  - **Trigger automatici**: Creazione automatica di trigger che impediscono UPDATE e DELETE non autorizzati sulla tabella `qgis_projects`
+  - **Protezione trasparente**: I trigger si creano automaticamente all'apertura del GeoPackage
+  - **Sistema di bypass intelligente**: Gestione automatica del bypass per operazioni autorizzate dal plugin
+  - **Tabella di controllo**: `qgis_projects_trigger_bypass` per gestire l'abilitazione/disabilitazione temporanea
+  - **Protezione universale**: Funziona anche contro modifiche da strumenti esterni (DB Browser, DBeaver, etc.)
+
+- **Menu Gestione Protezione**: Nuovo sottomenu contestuale "🔒 Gestione Protezione" per ogni progetto
+  - **ℹ️ Stato Protezione**: Mostra dialog con informazioni dettagliate sullo stato dei trigger
+    - Visualizzazione grafica dello stato (ATTIVA ✅ / PARZIALE ⚠️ / DISATTIVATA ❌)
+    - Lista dei trigger presenti (prevent_project_update, prevent_project_delete)
+    - Stato corrente del bypass (protezione attiva o disattivata)
+    - Avvisi se il bypass è attivo
+  - **🔓 Disabilita Temporanea**: Rimuove i trigger per operazioni di manutenzione avanzata
+    - Conferma richiesta prima della disabilitazione
+    - Messaggio di avviso persistente nella barra messaggi QGIS
+  - **🔐 Ripristina Protezione**: Ricrea i trigger se sono stati rimossi
+    - Verifica automatica dello stato esistente
+    - Conferma visiva del ripristino
+
+### 🔧 Migliorato
+- **Funzioni di salvataggio/modifica**: Integrate con sistema bypass trigger
+  - `salva_progetto()`: Abilita bypass automatico quando si sovrascrive un progetto esistente
+  - `elimina_progetto()`: Abilita bypass automatico prima del DELETE
+  - `rinomina_progetto()`: Abilita bypass automatico prima dell'UPDATE
+  - Gestione errori robusta con cleanup automatico del bypass in caso di eccezioni
+
+- **Gestione database**: Nuove funzioni per gestione protezione
+  - `crea_trigger_protezione(conn)`: Crea trigger e tabella di controllo
+  - `abilita_bypass_trigger(conn)`: Abilita temporaneamente il bypass
+  - `disabilita_bypass_trigger(conn)`: Riattiva la protezione
+  - `rimuovi_trigger_protezione(conn)`: Rimuove completamente i trigger
+  - `verifica_stato_protezione()`: Mostra dialog con stato dettagliato
+  - `disabilita_protezione_temporanea()`: Interfaccia per disabilitare la protezione
+  - `ripristina_protezione()`: Interfaccia per ripristinare la protezione
+
+### 📚 Documentazione
+- **TRIGGERS_PROTECTION.md**: Documentazione tecnica completa (350+ linee)
+  - Descrizione dettagliata del funzionamento dei trigger
+  - Esempi SQL e Python
+  - Sezioni troubleshooting e best practices
+- **README_TRIGGERS.md**: Guida rapida per l'utente
+  - Istruzioni di utilizzo semplificate
+  - Test e verifica dello stato
+  - FAQ e risoluzione problemi comuni
+- **test_triggers.py**: Script automatico di test
+  - Verifica esistenza e funzionamento dei trigger
+  - Test blocco UPDATE/DELETE
+  - Test funzionamento bypass
+  - Report dettagliato con esito dei test
+- **esempio_trigger.sql**: File SQL con esempi pratici
+  - Query di verifica stato trigger
+  - Esempi di test manuali
+  - Comandi per rimozione/ripristino trigger
+- **CHANGELOG_TRIGGERS.md**: Changelog specifico per la feature trigger
+  - Dettaglio completo delle modifiche
+  - Impatto sulle prestazioni
+  - Note di migrazione
+
+### 🔐 Sicurezza
+- **Protezione progetti a livello database**: I trigger operano direttamente in SQLite
+- **Blocco modifiche esterne**: Impedisce modifiche da qualsiasi strumento che non sia il plugin
+- **Versioning forzato**: Incoraggia creazione di nuove versioni invece della sovrascrittura
+- **Audit trail**: Solo operazioni autorizzate dal plugin possono modificare i progetti
+
+### 🧪 Testing
+- Script di test automatico (`test_triggers.py`) con 6 test completi
+- Esempi SQL per test manuali
+- Verifica in produzione con GeoPackage reali
+
+### ⚡ Prestazioni
+- **Overhead minimo**: I trigger si attivano solo durante UPDATE/DELETE
+- **Query istantanea**: Verifica bypass su tabella con 1 solo record
+- **Nessun impatto su SELECT/INSERT**: Operazioni di lettura e inserimento non influenzate
+
+---
+
 ## [3.6.0] - 2025-12-06
 
 ### 🎉 Aggiunto

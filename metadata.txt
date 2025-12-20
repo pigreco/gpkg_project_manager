@@ -3,7 +3,7 @@ name=GeoPackage Project Manager
 qgisMinimumVersion=3.0
 description=Gestisci i progetti QGIS direttamente all'interno di GeoPackage con funzionalità avanzate di clonazione
 description[en]=Manage QGIS projects directly within GeoPackage with advanced cloning features
-version=3.5.0
+version=3.7.1
 author=Salvatore Fiandaca (Totò)
 email=pigrecoinfinito@gmail.com
 
@@ -14,6 +14,8 @@ about=GeoPackage Project Manager è un plugin che permette di gestire in modo co
     • Gestione completa: rinomina, duplica, sovrascrivi, elimina progetti
     • Esportazione progetti in formato QGS o QGZ
     • Clonazione intelligente di GeoPackage con aggiornamento automatico dei percorsi
+    • Protezione con trigger SQLite: impedisce modifiche non autorizzate ai progetti
+    • Gestione avanzata della protezione tramite menu contestuale
     • Interfaccia moderna e intuitiva con supporto Qt5/Qt6
     • Selettore di lingua integrato nell'interfaccia (Italiano/Inglese)
     • Rilevamento automatico dei GeoPackage utilizzati nel progetto corrente
@@ -31,6 +33,8 @@ about[en]=GeoPackage Project Manager is a plugin that allows complete management
     • Complete management: rename, duplicate, overwrite, delete projects
     • Export projects to QGS or QGZ format
     • Smart GeoPackage cloning with automatic path updates
+    • SQLite trigger protection: prevents unauthorized project modifications
+    • Advanced protection management via context menu
     • Modern and intuitive interface with Qt5/Qt6 support
     • Integrated language selector in the interface (Italian/English)
     • Automatic detection of GeoPackages used in the current project
