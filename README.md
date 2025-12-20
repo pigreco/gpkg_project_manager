@@ -279,72 +279,74 @@ https://github.com/pigreco/gpkg_project_manager/issues
 
 ## Changelog
 
+Per il changelog completo e dettagliato, consulta il file [CHANGELOG.md](CHANGELOG.md).
+
+### v3.7.1 (2025-12-20)
+- 🔧 **Indicatore protezione visibile**: Aggiunto indicatore stato protezione sulla riga "ℹ️ Info"
+  - Mostra stato in tempo reale: `🔒 Protezione: ATTIVA ✅` / `🔓 DISATTIVATA` / `⚠️ PARZIALE`
+  - Pulsante ⚙️ per accesso rapido al menu gestione
+- 🎯 **UX migliorata**: Menu protezione ora a livello GeoPackage (semanticamente corretto)
+- 📝 **Documentazione**: Chiarito che la protezione vale per TUTTO il GeoPackage
+
+### v3.7.0 (2025-12-20)
+- 🎉 **Sistema di Protezione con Trigger SQLite**: Protezione automatica dei progetti
+  - Trigger automatici che impediscono UPDATE e DELETE non autorizzati
+  - Protezione trasparente e universale (funziona anche contro strumenti esterni)
+  - Menu "🔒 Gestione Protezione" con stato, disabilitazione temporanea e ripristino
+- 🔐 **Sicurezza**: Protezione a livello database, blocco modifiche esterne, versioning forzato
+- 📚 **Documentazione completa**: TRIGGERS_PROTECTION.md, README_TRIGGERS.md, test_triggers.py
+- ⚡ **Prestazioni**: Overhead minimo, nessun impatto su SELECT/INSERT
+
+### v3.6.0 (2025-12-06)
+- 🎉 **Tab "🔗 Relazioni"**: Visualizzazione completa relazioni tra tabelle
+  - Foreign Keys (FK), GeoPackage Extension, Relazioni di Progetto QGIS
+  - Estrazione automatica dal progetto con supporto HEX
+  - Mostra tipo (Association/Composition) e cardinalità (1:N)
+- 🔧 **Popolamento automatico descrizione**: Campo descrizione si popola quando si seleziona un progetto
+- 📊 **Tabelle semplificate**: Rimosse colonne non essenziali per vista più pulita
+
+### v3.5.0 (2025-12-05)
+- 🎉 **Interfaccia a Tab**: Navigazione fluida tra "📋 Progetti" e "🎨 Stili"
+- 🎨 **Gestione Stili integrata**: Applica, esporta, rinomina, duplica, imposta default ed elimina stili
+- ✨ **UX migliorata**: Tutto in un'unica finestra, senza dialog separati
+
+### v3.4.2 (2025-12-05)
+- ✅ **Checkbox "Usa nome GeoPackage"**: Imposta nome progetto uguale al GeoPackage
+- 📝 **Campo Descrizione**: Descrizione opzionale per progetti con tooltip informativo
+
 ### v3.4.1 (2025-12-04)
-- 🎯 **Colonna EPSG**: Mostra il sistema di riferimento (CRS) del progetto nella tabella
-  - ✅ Estrazione affidabile tramite API QGIS (100% accurato)
-  - ✅ Formato "EPSG:XXXX" visualizzato nella colonna dedicata
-  - ✅ Funziona con qualsiasi CRS supportato da QGIS
+- 🎯 **Colonna EPSG**: Sistema di riferimento (CRS) visualizzato nella tabella
 - 📊 **Dettaglio conteggio layer**: Mostra V:3 R:2 T:1 (Vettoriali, Raster, Tabelle)
-  - ✅ Conteggio separato per tipo di layer
-  - ✅ Esclude tabelle di sistema (qgis_, sqlite_, gpkg_)
-  - ✅ Visualizza solo i tipi presenti
-- 🛠️ **Fix estrazione EPSG**: Risolto problema che mostrava sempre "N/A"
 
 ### v3.4.0 (2025-12-04)
-- 🎨 **Gestione Stili Layer**: Nuova funzionalità per visualizzare e gestire gli stili salvati nel GeoPackage
-  - ✅ Visualizzazione completa degli stili dalla tabella `layer_styles` (standard OGC)
-  - ✅ Applica, esporta, rinomina, duplica, imposta come default ed elimina stili
-  - ✅ Menu contestuale ⚙️ e doppio clic per operazioni rapide
-  - ✅ Compatibilità completa Qt5/Qt6
-  - ✅ File: `dialog_styles.py` (nuovo)
-- 🌍 **Traduzioni**: Aggiornate traduzioni inglesi con 56 nuove stringhe
+- 🎨 **Gestione Stili Layer**: Visualizza e gestisce stili dalla tabella `layer_styles` (OGC)
+- 🌍 **Traduzioni**: 56 nuove stringhe tradotte in inglese
 
 ### v3.3.2 (2025-12-03)
-- 🛠️ **Gestione date di modifica**: Corretta la logica di aggiornamento delle date di modifica
-  - ✅ Data modifica aggiornata SOLO quando si sovrascrive realmente un progetto
-  - ✅ "Aggiorna Metadati" non tocca più le date di modifica (aggiorna solo dimensione/layer)
-- 🎨 **Doppia interfaccia**: Mantenute entrambe le versioni (lista e tabella)
+- 🛠️ **Gestione date**: Data modifica aggiornata SOLO quando si sovrascrive un progetto
 
 ### v3.3.1 (2025-12-02)
-- 🛠️ **Bug fix critici**: Corretti 6 bug importanti nel plugin
-  - ✅ Fix rinomina progetto: metadati ora aggiornati correttamente
-  - ✅ Fix duplicazione progetto: metadati copiati insieme al progetto
-  - ✅ Fix flag `is_new`: corretta distinzione tra nuovi progetti e sovrascritti
-  - ✅ Fix test traduzione italiano: test ora funziona per lingua default
-  - ✅ Fix reset dialog: dialog sempre resettato alla chiusura
-  - ✅ Fix ricaricamento dopo esportazione: gestione migliorata progetti GeoPackage
-- 🔄 **Retrocompatibilità**: Tutti i fix sono retrocompatibili, nessuna modifica al database
+- 🛠️ **Bug fix critici**: Corretti 6 bug (rinomina, duplicazione, flag is_new, test traduzione, reset dialog)
 
 ### v3.3.0 (2025-12-02)
-- 📊 **Sistema metadati completo**: Estrazione e salvataggio automatico di metadati dettagliati per ogni progetto
-- 💡 **Tooltip intelligenti**: Visualizzazione informazioni complete al passaggio del mouse (data creazione/modifica, dimensione, layer count)
-- 🔄 **Aggiornamento batch metadati**: Nuovo pulsante per rigenerare tutti i metadati con un clic
-- 🛠️ **Fix compatibilità Qt5/Qt6**: Risolti problemi con tooltip e checkbox su diverse versioni di Qt
-- 🎯 **Fallback intelligente**: I tooltip mostrano sempre almeno la dimensione del progetto, anche senza metadati completi
-- 🌍 **Traduzioni aggiornate**: Tutte le nuove funzionalità tradotte in italiano e inglese
-- 🗃️ **Tabella metadata**: Nuova tabella `qgis_projects_metadata` per informazioni dettagliate sui progetti
+- 📊 **Sistema metadati completo**: Estrazione automatica metadati dettagliati
+- 💡 **Tooltip intelligenti**: Info complete al passaggio del mouse
+- 🔄 **Aggiornamento batch**: Rigenera tutti i metadati con un clic
 
 ### v3.2.0 (2025)
-- ⚙️ **Ottimizzazione database**: Compatta il GeoPackage con VACUUM SQLite per ridurre dimensioni e migliorare performance
-- 📊 **Info GeoPackage in tempo reale**: Visualizza dimensione file e numero progetti aggiornati automaticamente
-- 📈 **Statistiche ottimizzazione**: Mostra spazio risparmiato, percentuale di riduzione e tempo impiegato
-- 🔧 **Gestione performance**: Rimuove spazio inutilizzato e ottimizza tabelle del database
+- ⚙️ **Ottimizzazione database**: VACUUM SQLite per ridurre dimensioni e migliorare performance
+- 📊 **Info in tempo reale**: Dimensione file e numero progetti sempre aggiornati
 
 ### v3.1.0 (2025)
-- 🔢 **Timestamp automatico**: Aggiungi timestamp ai nomi dei progetti (YYYYMMDDHHmmss)
-- 📊 **Versioning incrementale progetti**: Sistema automatico di versioning (v01, v02, ..., v99)
-- 🔄 **Versioning GeoPackage clonati**: Versioning automatico per i file clonati
-- 💾 **Impostazioni persistenti**: Le preferenze vengono salvate tra le sessioni
-- ✨ **Sostituzione intelligente**: Evita l'accumulo di timestamp e versioni duplicate
+- 🔢 **Timestamp automatico**: Aggiungi timestamp ai nomi (YYYYMMDDHHmmss)
+- 📊 **Versioning incrementale**: Sistema automatico (v01, v02, ..., v99)
+- 💾 **Impostazioni persistenti**: Preferenze salvate tra le sessioni
 
 ### v3.0.0 (2025)
-- ✨ Interfaccia moderna completamente ridisegnata
-- 🔀 Funzionalità di clonazione GeoPackage con aggiornamento automatico percorsi
-- 🎯 Supporto completo Qt5/Qt6
-- 📤 Esportazione progetti in formato QGS/QGZ
-- 🖱️ Menu contestuale per azioni rapide
-- 🐛 Miglioramenti alla stabilità e gestione errori
-- 📋 Funzioni di duplicazione e rinomina progetti
+- ✨ **Interfaccia moderna**: Design completamente ridisegnato
+- 🔀 **Clonazione GeoPackage**: Con aggiornamento automatico percorsi
+- 🎯 **Supporto Qt5/Qt6**: Compatibilità completa
+- 📤 **Esportazione**: Formato QGS/QGZ
 
 ## Link Utili
 
